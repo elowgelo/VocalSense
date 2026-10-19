@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk — VocalSense AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .auth-page {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 5rem 1.5rem 2rem;
+      background: var(--bg);
+    }
+    .auth-box {
+      width: 100%; max-width: 420px;
+      background: #ffffff; border: 1px solid var(--border-dark);
+      border-radius: var(--radius-sm); padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+    .auth-logo {
+      display: flex; align-items: center; gap: 10px;
+      justify-content: center; margin-bottom: 1.5rem;
+    }
+    .auth-logo .logo-icon {
+      width: 36px; height: 36px; border: 1px solid var(--border-dark);
+      background: var(--text); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; font-weight: 700;
+    }
+    .auth-title { font-size: 1.25rem; font-weight: 800; text-align: center; margin-bottom: 0.25rem; }
+    .auth-sub { color: var(--text2); font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem; }
+    .oauth-btn {
+      width: 100%; padding: 0.65rem; border-radius: var(--radius-sm);
+      background: #ffffff; border: 1px solid var(--border-dark); color: var(--text);
+      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    }
+    .oauth-btn:hover { background: var(--bg2); }
+    .btn-full { width: 100%; justify-content: center; padding: 0.75rem; font-size: 0.9rem; }
+    .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text2); }
+    .auth-footer a { color: var(--text); font-weight: 700; text-decoration: underline; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <div class="logo-icon">VS</div>
+    <span>VocalSense AI</span>
+  </a>
+  <div class="navbar-actions">
+    <a href="register.html" class="btn btn-primary btn-sm">Daftar</a>
+  </div>
+</nav>
+
+<div class="auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-icon">VS</div>
+      <span style="font-size:1.2rem;font-weight:700">VocalSense AI</span>
+    </div>
+    <h1 class="auth-title">Selamat Datang Kembali</h1>
+    <p class="auth-sub">Masuk untuk mengakses rapor dan arsip vokalmu</p>
+
+    <div id="alertBox" class="alert alert-error hidden mb-3"></div>
+
+    <!-- OAuth -->
+    <button class="oauth-btn mb-2" onclick="loginWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Lanjutkan dengan Google
+    </button>
+
+    <div class="divider">atau masuk dengan email</div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="email" class="form-control" placeholder="nama@email.com" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="display:flex;justify-content:space-between">
+          <span>Kata Sandi</span>
+          <a href="#" style="color:var(--accent2);font-size:0.8rem">Lupa kata sandi?</a>
+        </label>
+        <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full mt-2" id="submitBtn">
+        Masuk
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Belum punya akun? <a href="register.html">Daftar sekarang</a>
+    </div>
+    <div class="auth-footer mt-1">
+      <a href="studio.html">Atau coba gratis tanpa daftar →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Check if already logged in
+  if (localStorage.getItem('vs_user')) {
+    window.location.href = 'studio.html';
+  }
+
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alertBox');
+    el.className = `alert alert-${type} mb-3`;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('submitBtn');
+
+    btn.disabled = true;
+    btn.textContent = 'Memverifikasi...';
+
+    setTimeout(() => {
+      // Check against registered users in localStorage
+      const users = JSON.parse(localStorage.getItem('vs_users') || '[]');
+      const user = users.find(u => u.email === email);
+
+      if (!user) {
+        showAlert('Email tidak ditemukan. Silakan daftar terlebih dahulu.');
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+        return;
+      }
+      if (user.password !== btoa(password)) {
+        showAlert('Kata sandi salah. Coba lagi.');
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+        return;
+      }
+
+      localStorage.setItem('vs_user', JSON.stringify({ name: user.name, email: user.email, tier: user.tier || 'free' }));
+      window.location.href = 'studio.html';
+    }, 600);
+  }
+
+  function loginWithGoogle() {
+    // Simulate Google OAuth for prototype
+    const mockUser = {
+      name: 'Demo User',
+      email: 'demo@gmail.com',
+      tier: 'free',
+      avatar: 'https://ui-avatars.com/api/?name=Demo+User&background=7c3aed&color=fff'
+    };
+    localStorage.setItem('vs_user', JSON.stringify(mockUser));
+    window.location.href = 'studio.html';
+  }
+</script>
+</body>
+</html>
+
+

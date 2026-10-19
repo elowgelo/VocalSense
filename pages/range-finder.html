@@ -1,0 +1,370 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vocal Range Finder — VocalSense AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .page-header { padding: 2.5rem 0 1.5rem; }
+    .page-header h1 { font-size: 1.75rem; font-weight: 800; }
+    .page-header p { color: var(--text2); margin-top: 0.4rem; }
+
+    .finder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media(max-width:768px) { .finder-grid { grid-template-columns: 1fr; } }
+
+    .note-big {
+      font-size: 4rem; font-weight: 900; line-height: 1;
+      letter-spacing: -2px; text-align: center; padding: 1.5rem 0;
+    }
+    .step-card {
+      border: 1px solid var(--border-dark); border-radius: var(--radius-sm);
+      padding: 2rem; text-align: center; position: relative;
+      background: var(--bg);
+    }
+    .step-card.active { border-color: var(--text); border-width: 2px; }
+    .step-card.done { border-color: var(--green); border-width: 2px; }
+    .step-badge {
+      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+      font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.65rem;
+      border: 1px solid var(--border-dark); border-radius: 2px;
+      background: #ffffff; color: var(--text);
+      white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .step-badge-1 { border-color: var(--text); color: var(--text); }
+    .step-badge-2 { border-color: var(--text); color: var(--text); }
+    .step-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .step-hint { color: var(--text2); font-size: 0.85rem; margin-bottom: 1.25rem; }
+
+    /* Pitch indicator */
+    .live-note { font-size: 2.5rem; font-weight: 800; height: 80px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+    .live-freq { color: var(--text2); font-size: 0.9rem; text-align: center; margin-bottom: 1rem; font-family: var(--font-mono); }
+
+    /* Result section */
+    .result-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem; text-align: center;
+    }
+    .voice-type-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: #ffffff; border: 1.5px solid var(--text);
+      border-radius: 3px; padding: 0.35rem 1rem;
+      font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 1rem 0;
+      letter-spacing: -0.2px;
+    }
+    .range-bar-wrap { margin: 1.5rem 0; }
+    .piano-range {
+      display: flex; overflow-x: auto; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); height: 52px; min-width: 100%;
+      background: #ffffff;
+    }
+    .piano-key-range {
+      min-width: 20px; height: 100%; border-right: 1px solid var(--border);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 4px; font-size: 0.5rem; cursor: default;
+      transition: background 0.2s;
+    }
+    .piano-key-range.white { background: #ffffff; color: var(--text2); }
+    .piano-key-range.black { background: var(--bg3); height: 65%; align-self: flex-start; color: var(--text); font-weight: 700; }
+    .piano-key-range.in-range { background: #e5e5e5 !important; }
+    .piano-key-range.low-note { background: #111111 !important; color: #ffffff !important; font-weight: bold; }
+    .piano-key-range.high-note { background: #111111 !important; color: #ffffff !important; font-weight: bold; }
+
+    /* Voice type comparison table */
+    .voice-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+    .voice-table th { color: var(--text2); font-weight: 600; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+    .voice-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+    .voice-table tr.highlight-row td { background: var(--bg2); color: var(--text); font-weight: 700; border-left: 3px solid var(--text); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <div class="logo-icon">VS</div>
+    <span>VocalSense AI</span>
+  </a>
+  <div class="navbar-nav">
+    <a href="../index.html" class="nav-link">Beranda</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="tuner.html" class="nav-link">Tuner</a>
+    <a href="range-finder.html" class="nav-link active">Jangkauan Vokal</a>
+  </div>
+  <div class="navbar-actions" id="navAuth"></div>
+</nav>
+
+<div class="page">
+  <div class="container">
+    <div class="page-header">
+      <h1>Pengukuran jangkauan vokal</h1>
+      <p>Ukur nada terendah dan tertinggi untuk menentukan batas vokal yang aman.</p>
+    </div>
+
+    <!-- Start button -->
+    <div id="startSection" class="text-center" style="padding:3rem 0">
+      <p class="text-muted mb-3">Uji ini membutuhkan dua nada stabil tanpa perlu memaksakan tenggorokan.</p>
+      <button class="btn btn-primary btn-lg" onclick="startFinder()">Mulai pengukuran</button>
+    </div>
+
+    <!-- Test steps -->
+    <div id="testSection" class="hidden">
+      <div class="alert alert-info mb-3" id="instruction">
+        Nyanyikan nada serendah mungkin yang nyaman, tahan setidaknya 2 detik, lalu klik "Catat Nada Terendah"
+      </div>
+
+      <div class="finder-grid mb-4">
+        <!-- Low note step -->
+        <div class="step-card" id="stepLow">
+          <div class="step-badge step-badge-1">Langkah 1</div>
+          <div class="step-title">Nada Terendah</div>
+          <p class="step-hint">Nyanyikan "aaah" pada nada terendah yang nyaman, tahan stabil</p>
+          <div class="live-note" id="liveNoteLow">—</div>
+          <div class="live-freq" id="liveFreqLow">— Hz</div>
+          <button class="btn btn-primary" id="btnCaptureLow" onclick="captureNote('low')" disabled>
+            Catat Nada Terendah
+          </button>
+          <div id="capturedLow" class="mt-2 hidden">
+            <div style="font-size: 0.75rem; color: var(--text2); margin-bottom: 2px;">Tercatat:</div>
+            <div style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--text); padding: 4px 8px; border: 1px solid var(--border-dark); border-radius: 3px; display: inline-block; background: var(--bg3);" id="capturedLowBadge"></div>
+          </div>
+        </div>
+
+        <!-- High note step -->
+        <div class="step-card" id="stepHigh">
+          <div class="step-badge step-badge-2">Langkah 2</div>
+          <div class="step-title">Nada Tertinggi</div>
+          <p class="step-hint">Nyanyikan "eeee" pada nada tertinggi yang nyaman tanpa memaksa</p>
+          <div class="live-note" id="liveNoteHigh">—</div>
+          <div class="live-freq" id="liveFreqHigh">— Hz</div>
+          <button class="btn btn-primary" id="btnCaptureHigh" onclick="captureNote('high')" disabled>
+            Catat Nada Tertinggi
+          </button>
+          <div id="capturedHigh" class="mt-2 hidden">
+            <div style="font-size: 0.75rem; color: var(--text2); margin-bottom: 2px;">Tercatat:</div>
+            <div style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; color: var(--text); padding: 4px 8px; border: 1px solid var(--border-dark); border-radius: 3px; display: inline-block; background: var(--bg3);" id="capturedHighBadge"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mb-4">
+        <button class="btn btn-success btn-lg" id="btnAnalyze" onclick="analyzeRange()" disabled>
+          Analisis Tipe Suara
+        </button>
+        <button class="btn btn-outline ml-2" onclick="resetTest()" style="margin-left:0.75rem">Ulangi Tes</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="resultSection" class="hidden">
+      <div class="result-card mb-4">
+        <h2 class="fw-800" style="font-size:1.5rem;margin-bottom:0.5rem">Hasil Jangkauan Suara Anda</h2>
+        <div class="voice-type-badge" id="voiceTypeBadge">Belum dihitung</div>
+        <div style="display:flex;justify-content:center;gap:3rem;margin:1.5rem 0">
+          <div>
+            <div class="stat-value" id="resultLow"></div>
+            <div class="stat-label">Nada Terendah</div>
+          </div>
+          <div style="color:var(--text3);font-size:1.5rem;align-self:center">sampai</div>
+          <div>
+            <div class="stat-value" id="resultHigh"></div>
+            <div class="stat-label">Nada Tertinggi</div>
+          </div>
+        </div>
+        <div class="stat-label mb-3">Rentang: <span id="resultOctaves" class="fw-600"></span></div>
+
+        <!-- Piano roll range visualization -->
+        <div class="range-bar-wrap">
+          <div class="piano-range" id="pianoRange"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.35rem;font-size:0.7rem;color:var(--text3)">
+            <span>C2</span><span>C3</span><span>C4 Tengah</span><span>C5</span><span>C6</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice type comparison -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="card-title">Perbandingan Tipe Suara</div>
+          <div class="card-subtitle">Baris yang disorot = tipe suara terdeksimu</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="voice-table" id="voiceTable">
+            <thead>
+              <tr>
+                <th>Tipe Suara</th><th>Nada Terendah</th><th>Nada Tertinggi</th><th>Rentang</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-type="Bass"><td>Bass</td><td>E2</td><td>E4</td><td>2 oktaf</td></tr>
+              <tr data-type="Bariton"><td>Bariton</td><td>G2</td><td>G4</td><td>2 oktaf</td></tr>
+              <tr data-type="Tenor"><td>Tenor</td><td>C3</td><td>C5</td><td>2 oktaf</td></tr>
+              <tr data-type="Alto"><td>Alto</td><td>F3</td><td>F5</td><td>2 oktaf</td></tr>
+              <tr data-type="Mezzo-Sopran"><td>Mezzo-Sopran</td><td>G3</td><td>G5</td><td>2 oktaf</td></tr>
+              <tr data-type="Sopran"><td>Sopran</td><td>C4</td><td>C6</td><td>2 oktaf</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <a href="studio.html" class="btn btn-primary btn-lg">Buka Studio Latihan</a>
+        <button class="btn btn-outline btn-lg" onclick="resetAll()" style="margin-left:0.75rem">Ulangi Tes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/pitch.js"></script>
+<script>
+  const user = JSON.parse(localStorage.getItem('vs_user') || 'null');
+  const navAuth = document.getElementById('navAuth');
+  navAuth.innerHTML = user
+    ? `<span class="text-sm text-muted" style="margin-right:0.5rem">${user.name}</span><a href="login.html" class="btn btn-outline btn-sm" onclick="localStorage.removeItem('vs_user')">Keluar</a>`
+    : `<a href="login.html" class="btn btn-outline btn-sm">Masuk</a><a href="register.html" class="btn btn-primary btn-sm">Daftar</a>`;
+
+  let audioCtx, analyser, source, stream, animFrame;
+  let running = false;
+  let capturedLow = null, capturedHigh = null;
+  let currentPitch = -1;
+
+  const buf = new Float32Array(2048);
+
+  async function startFinder() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch(e) {
+      alert('Akses mikrofon ditolak.');
+      return;
+    }
+    audioCtx = new AudioContext();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    running = true;
+
+    document.getElementById('startSection').classList.add('hidden');
+    document.getElementById('testSection').classList.remove('hidden');
+
+    tick();
+  }
+
+  function tick() {
+    if (!running) return;
+    animFrame = requestAnimationFrame(tick);
+    analyser.getFloatTimeDomainData(buf);
+    currentPitch = PitchUtils.detectPitch(buf, audioCtx.sampleRate);
+
+    const info = currentPitch > 0 ? PitchUtils.freqToNote(currentPitch) : null;
+    const noteStr = info ? `${info.note}${info.octave}` : '—';
+    const freqStr = info ? `${currentPitch.toFixed(1)} Hz` : '— Hz';
+
+    // Update both panels simultaneously
+    document.getElementById('liveNoteLow').textContent = noteStr;
+    document.getElementById('liveFreqLow').textContent = freqStr;
+    document.getElementById('liveNoteHigh').textContent = noteStr;
+    document.getElementById('liveFreqHigh').textContent = freqStr;
+
+    document.getElementById('btnCaptureLow').disabled = !info;
+    document.getElementById('btnCaptureHigh').disabled = !info;
+  }
+
+  function captureNote(type) {
+    if (currentPitch <= 0) return;
+    const info = PitchUtils.freqToNote(currentPitch);
+    if (!info) return;
+
+    const label = `${info.note}${info.octave}, ${currentPitch.toFixed(1)} Hz`;
+
+    if (type === 'low') {
+      capturedLow = { ...info, freq: currentPitch };
+      document.getElementById('capturedLow').classList.remove('hidden');
+      document.getElementById('capturedLowBadge').textContent = label;
+      document.getElementById('stepLow').classList.add('done');
+    } else {
+      capturedHigh = { ...info, freq: currentPitch };
+      document.getElementById('capturedHigh').classList.remove('hidden');
+      document.getElementById('capturedHighBadge').textContent = label;
+      document.getElementById('stepHigh').classList.add('done');
+    }
+
+    document.getElementById('btnAnalyze').disabled = !(capturedLow && capturedHigh);
+  }
+
+  function analyzeRange() {
+    if (!capturedLow || !capturedHigh) return;
+    running = false;
+    cancelAnimationFrame(animFrame);
+    stream?.getTracks().forEach(t => t.stop());
+    audioCtx?.close();
+
+    // Ensure low < high
+    let low = capturedLow, high = capturedHigh;
+    if (low.midiNote > high.midiNote) [low, high] = [high, low];
+
+    const octaves = ((high.midiNote - low.midiNote) / 12).toFixed(1);
+    const voiceType = PitchUtils.classifyVoiceType(low.midiNote, high.midiNote);
+
+    document.getElementById('testSection').classList.add('hidden');
+    document.getElementById('resultSection').classList.remove('hidden');
+
+    document.getElementById('voiceTypeBadge').textContent = `Tipe Vokal: ${voiceType}`;
+    document.getElementById('resultLow').textContent = `${low.note}${low.octave}`;
+    document.getElementById('resultHigh').textContent = `${high.note}${high.octave}`;
+    document.getElementById('resultOctaves').textContent = `${octaves} oktaf`;
+
+    buildPianoRange(low.midiNote, high.midiNote);
+    highlightVoiceTable(voiceType);
+  }
+
+  function buildPianoRange(lowMidi, highMidi) {
+    const container = document.getElementById('pianoRange');
+    container.innerHTML = '';
+    const SHARP_PATTERN = [0,1,0,1,0,0,1,0,1,0,1,0]; // 0=white,1=black
+    const START = 36; // C2
+    const END = 84;   // C6
+
+    for (let midi = START; midi <= END; midi++) {
+      const isBlack = SHARP_PATTERN[midi % 12] === 1;
+      const inRange = midi >= lowMidi && midi <= highMidi;
+      const isLow = midi === lowMidi;
+      const isHigh = midi === highMidi;
+      const note = PitchUtils.midiToName(midi);
+
+      const key = document.createElement('div');
+      key.className = `piano-key-range ${isBlack ? 'black' : 'white'}${inRange ? ' in-range' : ''}${isLow ? ' low-note' : ''}${isHigh ? ' high-note' : ''}`;
+      key.title = note;
+      if (!isBlack && midi % 12 === 0) key.textContent = `C${Math.floor(midi/12)-1}`;
+      container.appendChild(key);
+    }
+  }
+
+  function highlightVoiceTable(voiceType) {
+    document.querySelectorAll('#voiceTable tbody tr').forEach(tr => {
+      tr.classList.toggle('highlight-row', tr.dataset.type === voiceType);
+    });
+  }
+
+  function resetTest() {
+    capturedLow = capturedHigh = null;
+    document.getElementById('capturedLow').classList.add('hidden');
+    document.getElementById('capturedHigh').classList.add('hidden');
+    document.getElementById('btnAnalyze').disabled = true;
+    document.getElementById('stepLow').classList.remove('done');
+    document.getElementById('stepHigh').classList.remove('done');
+  }
+
+  function resetAll() {
+    resetTest();
+    document.getElementById('resultSection').classList.add('hidden');
+    document.getElementById('startSection').classList.remove('hidden');
+    document.getElementById('testSection').classList.add('hidden');
+  }
+</script>
+</body>
+</html>
+
+
