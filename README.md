@@ -1,60 +1,92 @@
-ï»¿# VocalSense AI
+# VocalSense AI (React Edition)
 Platform latihan vokal cerdas berbasis web responsif untuk evaluasi nada bernyanyi presisi tinggi langsung di peramban web (*in-browser processing*) menggunakan Web Audio API tanpa ketergantungan server.
+Proyek ini telah dimigrasikan secara matang ke framework modern **React 18 + TypeScript + Vite** dengan arsitektur komponen modular, custom hooks terisolasi untuk Web Audio, SPA routing (`react-router-dom`), dan sistem evaluasi 5-dimensi berbasis Chart.js.
 ---
 ## Fitur Utama
-- **Chromatic Tuner**: Pendeteksian nada dasar secara real-time dengan jarum meter deviasi cents dan kontrol ambang batas kebisingan lingkungan (*noise gate*).
-- **Vocal Range Finder**: Pengujian rentang nada terendah (*Lowest Note*) hingga tertinggi (*Highest Note*) pada tuts piano interaktif beserta klasifikasi tipe suara otomatis (Bass, Bariton, Tenor, Contralto, Mezzo-Sopran, Sopran).
-- **DAW-Style Piano Roll Studio**: Studio bernyanyi interaktif dengan jendela geser 10 detik, notasi balok solid MIDI, panduan melodi Do-Re-Mi / arpeggio, dan audio synth piano bawaan.
-- **AI Vocal & Resonance Analytics**: Ekstraksi parameter akustik mencakup deteksi notasi musik, deviasi cents, status nada (*In-Tune*, *Flat*, *Sharp*), osilasi vibrato 5-7 Hz, dan analisis distribusi energi resonansi 3 pita suara (Chest, Mask/Mixed, Head Voice).
-- **Rapor Bernyanyi 5 Dimensi**: Visualisasi radar chart performa bernyanyi, kartu skor keseluruhan (0-100), dan rekomendasi latihan vokal.
+- **Chromatic Tuner**: Pendeteksian nada dasar secara real-time dengan jarum meter deviasi cents, arc gauge digital, riwayat nada 10 detik, dan kontrol ambang batas kebisingan lingkungan (*noise gate*).
+- **Vocal Range Finder**: Pengujian rentang nada terendah (*Lowest Note*) hingga tertinggi (*Highest Note*) pada tuts piano interaktif, pemutaran audio synth nada contoh, beserta klasifikasi tipe suara otomatis (Bass, Bariton, Tenor, Alto, Mezzo-Sopran, Sopran).
+- **DAW-Style Piano Roll Studio**: Studio bernyanyi interaktif dengan jendela geser 10 detik, kursor target statis gaya Smule (32% width), notasi balok solid MIDI adaptif, panduan melodi Do-Re-Mi / arpeggio, pemutar melodi audio synth bawaan, dan mode simulasi vokal (*demo mode*).
+- **AI Vocal & Resonance Analytics**: Ekstraksi parameter akustik mencakup deteksi notasi musik, deviasi cents, status nada (*In-Tune*, *Flat*, *Sharp*), osilasi vibrato 5ÔÇô7 Hz, dan analisis distribusi energi resonansi 3 pita suara (Chest, Mask/Mixed, Head Voice) via FFT Analyser.
+- **Rapor Bernyanyi 5 Dimensi**: Visualisasi radar chart performa bernyanyi (Akurasi Nada, Kestabilan Suara, Kontrol Napas, Getaran Vibrato, Resonansi Mask), kartu skor keseluruhan (0ÔÇô100) berpredikat (A/B/C/D), ringkasan chip nada, dan rekomendasi latihan vokal terpersonalisasi.
 - **Ekspor Rapor PDF**: Fitur cetak dokumen evaluasi vokal siap arsip menggunakan stylesheet `@media print`.
-- **Manajemen Akun & Model Freemium**: Halaman autentikasi pengguna dan katalog perbandingan tier (Free, Pro, Premium).
+- **Manajemen Akun & Model Freemium**: Halaman autentikasi pengguna (Login, Register, Simulasi Google OAuth) dan kontrol durasi rekaman berdasarkan tier (Free: 60s, Pro: 300s, Premium: 900s).
 ---
 ## Arsitektur & Teknologi
-- **Antarmuka**: HTML5, CSS3 kustom (Studio Pro Dark Theme), vanilla JavaScript.
-- **Tipografi**: Plus Jakarta Sans dan JetBrains Mono.
-- **Pemrosesan Audio**: Web Audio API (in-browser processing), AnalyserNode FFT, algoritma McLeod Pitch Method / Normalized Square Difference Function (NSDF), dan median filter 7-sample untuk stabilisasi nada.
-- **Visualisasi Data**: HTML5 Canvas API (Piano Roll) dan Chart.js (Radar Chart).
----
-## Panduan Menjalankan
-Aplikasi berjalan sepenuhnya pada sisi klien (*client-side*).
-### Prasyarat
-- Peramban web modern (Google Chrome, Microsoft Edge, Mozilla Firefox, atau Safari).
-- Mikrofon aktif dengan izin akses pada peramban.
-### Menjalankan secara Lokal
-1. Clone repositori:
-   ```bash
-   git clone https://github.com/elowgelo/VocalSense.git
-   cd VocalSense
-   ```
-2. Jalankan server lokal:
-   Menggunakan Python:
-   ```bash
-   python -m http.server 8000
-   ```
-   Atau menggunakan Node.js:
-   ```bash
-   npx serve .
-   ```
-3. Buka peramban pada alamat `http://localhost:8000`.
-Aplikasi juga dapat dibuka langsung melalui berkas `index.html` pada peramban.
+- **Framework**: React 18, TypeScript, Vite
+- **Routing**: `react-router-dom` (SPA Client-side routing)
+- **Desain & Ikon**: Studio Pro Dark/Light Theme kustom, Lucide React icons
+- **Tipografi**: Plus Jakarta Sans dan JetBrains Mono
+- **Pemrosesan Audio**: Web Audio API (in-browser processing), AnalyserNode FFT, algoritma McLeod Pitch Method / Normalized Square Difference Function (NSDF), dan median filter 7-sample untuk stabilisasi nada
+- **Visualisasi Data**: HTML5 Canvas API (Spectrum, Piano Roll, Waveform) dan Chart.js (5D Radar Chart)
+- **Audio Synthesizer**: Web Audio OscillatorNode synthesizer untuk pemutaran melodi panduan piano dan nada referensi
 ---
 ## Struktur Berkas
 ```text
 VocalSense/
-Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ index.html              # Halaman beranda dan katalog paket
-Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ README.md               # Dokumentasi proyek
-Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ css/
-Ã”Ã¶Ã©   Ã”Ã¶Ã¶Ã”Ã¶Ã‡Ã”Ã¶Ã‡ style.css           # Desain antarmuka Studio Pro
-Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ js/
-Ã”Ã¶Ã©   Ã”Ã¶Ã¶Ã”Ã¶Ã‡Ã”Ã¶Ã‡ pitch.js            # Engine pendeteksi nada dan teori musik
-Ã”Ã¶Ã¶Ã”Ã¶Ã‡Ã”Ã¶Ã‡ pages/
-    Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ login.html          # Halaman autentikasi pengguna
-    Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ range-finder.html   # Pengujian jangkauan vokal
-    Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ register.html       # Pendaftaran pengguna baru
-    Ã”Ã¶Â£Ã”Ã¶Ã‡Ã”Ã¶Ã‡ studio.html         # Studio vokal, piano roll, dan rapor evaluasi
-    Ã”Ã¶Ã¶Ã”Ã¶Ã‡Ã”Ã¶Ã‡ tuner.html          # Tuner kromatik digital
+Ôö£ÔöÇÔöÇ src/
+Ôöé   Ôö£ÔöÇÔöÇ components/
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ common/             # Komponen UI bersama
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ layout/             # Navbar, Footer, Layout wrapper
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ range-finder/       # PianoRangeBar, VoiceTypeTable
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ studio/             # SpectrumCanvas, PianoRollCanvas, WaveformCanvas, TelemetrySidebar, SingingReport, ImportSongModal
+Ôöé   Ôöé   ÔööÔöÇÔöÇ tuner/              # ArcGauge, NeedleMeter, PitchHistoryCanvas
+Ôöé   Ôö£ÔöÇÔöÇ context/
+Ôöé   Ôöé   ÔööÔöÇÔöÇ AuthContext.tsx     # Context autentikasi, sesi, dan tier freemium
+Ôöé   Ôö£ÔöÇÔöÇ hooks/
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ useAudioContext.ts  # Inisialisasi AudioContext & MediaStream mikrofon
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ usePianoSynth.ts    # Web Audio synthesizer melodi piano
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ usePitchDetection.ts# Real-time pitch tracking NSDF & median filter
+Ôöé   Ôöé   ÔööÔöÇÔöÇ useVoiceRecorder.ts # MediaRecorder audio buffer & waveform extraction
+Ôöé   Ôö£ÔöÇÔöÇ pages/
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ HomePage.tsx        # Halaman beranda & katalog paket langganan
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ LoginPage.tsx       # Halaman autentikasi masuk
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ RangeFinderPage.tsx # Pengujian jangkauan vokal interaktif
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ RegisterPage.tsx    # Pendaftaran pengguna baru & pemilihan tier
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ StudioPage.tsx      # DAW studio piano roll & evaluasi rapor vokal
+Ôöé   Ôöé   ÔööÔöÇÔöÇ TunerPage.tsx       # Tuner kromatik digital real-time
+Ôöé   Ôö£ÔöÇÔöÇ styles/
+Ôöé   Ôöé   ÔööÔöÇÔöÇ index.css           # Desain antarmuka Studio Pro & @media print
+Ôöé   Ôö£ÔöÇÔöÇ types/
+Ôöé   Ôöé   ÔööÔöÇÔöÇ index.ts            # Type definitions TypeScript
+Ôöé   Ôö£ÔöÇÔöÇ utils/
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ audioExport.ts      # Konversi WAV blob & ekstraksi nada audio buffer
+Ôöé   Ôöé   Ôö£ÔöÇÔöÇ exercisePresets.ts  # Presets melodi Do-Re-Mi, arpeggio, dan transposisi
+Ôöé   Ôöé   ÔööÔöÇÔöÇ pitch.ts            # Algoritma McLeod Pitch Method (NSDF) & teori musik
+Ôöé   Ôö£ÔöÇÔöÇ App.tsx                 # Route declarations & context wrapper
+Ôöé   ÔööÔöÇÔöÇ main.tsx                # Entry point aplikasi React
+Ôö£ÔöÇÔöÇ prototype-vanilla/          # Prototipe asli (HTML/CSS/JS) diarsipkan lengkap
+Ôö£ÔöÇÔöÇ index.html                  # HTML entry point Vite
+Ôö£ÔöÇÔöÇ package.json                # Dependencies & script commands
+Ôö£ÔöÇÔöÇ tsconfig.json               # Konfigurasi TypeScript
+Ôö£ÔöÇÔöÇ vite.config.ts              # Konfigurasi Vite build & dev server
+ÔööÔöÇÔöÇ README.md
 ```
+---
+## Panduan Menjalankan
+Aplikasi berjalan sepenuhnya pada sisi klien (*client-side*).
+### Prasyarat
+- Node.js (v18 ke atas) dan npm / pnpm / yarn.
+- Peramban web modern (Google Chrome, Microsoft Edge, Mozilla Firefox, atau Safari).
+- Mikrofon aktif dengan izin akses pada peramban.
+### Menjalankan secara Lokal
+1. Masuk ke direktori proyek:
+   ```bash
+   cd VocalSense
+   ```
+2. Pasang dependensi:
+   ```bash
+   npm install
+   ```
+3. Jalankan server pengembangan Vite:
+   ```bash
+   npm run dev
+   ```
+4. Buka alamat yang ditampilkan di terminal (biasanya `http://localhost:3000` atau `http://localhost:5173`).
+### Membangun untuk Produksi
+```bash
+npm run build
+```
+Hasil kompilasi produksi siap rilis akan disimpan di dalam direktori `dist/`.
 ---
 ## Lisensi
 Proyek ini dikembangkan untuk keperluan akademik mata kuliah Rekayasa Perangkat Lunak / Implementasi Perancangan Perangkat Lunak.
