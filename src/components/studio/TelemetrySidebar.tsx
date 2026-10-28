@@ -19,6 +19,11 @@ export const TelemetrySidebar: React.FC<TelemetrySidebarProps> = ({
   telemetry,
   resonance,
 }) => {
+  const safeRes = resonance || { chest: 33, mask: 33, head: 33 };
+  const safeChest = Number.isFinite(safeRes.chest) ? safeRes.chest : 33;
+  const safeMask = Number.isFinite(safeRes.mask) ? safeRes.mask : 33;
+  const safeHead = Number.isFinite(safeRes.head) ? safeRes.head : 33;
+
   const cents = currentNote ? currentNote.cents : 0;
   let statusText = 'MENUNGGU SUARA...';
   let statusColor = 'var(--text3)';
@@ -39,9 +44,9 @@ export const TelemetrySidebar: React.FC<TelemetrySidebarProps> = ({
   // Determine dominant vocal register
   let dominantRegister = 'Netral / Seimbang';
   if (currentFreq > 0) {
-    if (resonance.chest > resonance.mask && resonance.chest > resonance.head) {
+    if (safeChest > safeMask && safeChest > safeHead) {
       dominantRegister = 'Suara Dada (Chest Voice)';
-    } else if (resonance.mask >= resonance.chest && resonance.mask >= resonance.head) {
+    } else if (safeMask >= safeChest && safeMask >= safeHead) {
       dominantRegister = 'Suara Campuran (Mixed/Mask)';
     } else {
       dominantRegister = 'Suara Kepala (Head Voice)';
@@ -155,9 +160,9 @@ export const TelemetrySidebar: React.FC<TelemetrySidebarProps> = ({
             <strong style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{dominantRegister}</strong>
           </div>
           <div style={{ height: '6px', background: 'var(--bg2)', borderRadius: '3px', overflow: 'hidden', display: 'flex' }}>
-            <div style={{ height: '100%', width: `${resonance.chest}%`, background: '#2563eb', transition: 'width 0.15s ease' }} />
-            <div style={{ height: '100%', width: `${resonance.mask}%`, background: '#16a34a', transition: 'width 0.15s ease' }} />
-            <div style={{ height: '100%', width: `${resonance.head}%`, background: '#d97706', transition: 'width 0.15s ease' }} />
+            <div style={{ height: '100%', width: `${safeChest}%`, background: '#2563eb', transition: 'width 0.15s ease' }} />
+            <div style={{ height: '100%', width: `${safeMask}%`, background: '#16a34a', transition: 'width 0.15s ease' }} />
+            <div style={{ height: '100%', width: `${safeHead}%`, background: '#d97706', transition: 'width 0.15s ease' }} />
           </div>
         </div>
 
@@ -167,9 +172,9 @@ export const TelemetrySidebar: React.FC<TelemetrySidebarProps> = ({
             Suara Dada
           </span>
           <div className="resonance-track">
-            <div className="resonance-fill chest" style={{ width: `${resonance.chest}%` }} />
+            <div className="resonance-fill chest" style={{ width: `${safeChest}%` }} />
           </div>
-          <span className="resonance-val">{resonance.chest}%</span>
+          <span className="resonance-val">{safeChest}%</span>
         </div>
 
         <div className="resonance-bar">
@@ -178,9 +183,9 @@ export const TelemetrySidebar: React.FC<TelemetrySidebarProps> = ({
             Suara Campuran
           </span>
           <div className="resonance-track">
-            <div className="resonance-fill mask" style={{ width: `${resonance.mask}%` }} />
+            <div className="resonance-fill mask" style={{ width: `${safeMask}%` }} />
           </div>
-          <span className="resonance-val">{resonance.mask}%</span>
+          <span className="resonance-val">{safeMask}%</span>
         </div>
 
         <div className="resonance-bar">
@@ -189,9 +194,9 @@ export const TelemetrySidebar: React.FC<TelemetrySidebarProps> = ({
             Suara Kepala
           </span>
           <div className="resonance-track">
-            <div className="resonance-fill head" style={{ width: `${resonance.head}%` }} />
+            <div className="resonance-fill head" style={{ width: `${safeHead}%` }} />
           </div>
-          <span className="resonance-val">{resonance.head}%</span>
+          <span className="resonance-val">{safeHead}%</span>
         </div>
       </div>
     </div>

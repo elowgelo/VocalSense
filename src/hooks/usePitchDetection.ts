@@ -48,6 +48,13 @@ export function usePitchDetection({
   const timeBufRef = useRef<Float32Array | null>(null);
   const freqBufRef = useRef<Float32Array | null>(null);
   const medianBufRef = useRef<number[]>([]);
+  const lastStateUpdateRef = useRef<number>(0);
+
+  // Keep latest onTick in a ref to decouple animation loop from component render cycles
+  const onTickRef = useRef(onTick);
+  useEffect(() => {
+    onTickRef.current = onTick;
+  }, [onTick]);
 
   const startDetection = useCallback(() => {
     if (isRunningRef.current) return;
@@ -110,24 +117,32 @@ export function usePitchDetection({
       }
 
       const noteInfo = stableFreq > 0 ? freqToNote(stableFreq, refFreq) : null;
-      setCurrentFreq(stableFreq);
-      setCurrentNote(noteInfo);
 
       // Compute resonance from FFT
       targetFft.getFloatFrequencyData(freqBuf as any);
       const res = computeResonance(freqBuf, audioCtx.sampleRate, targetFft.fftSize);
-      if (stableFreq > 0) {
-        setResonance(res);
-      }
 
-      if (onTick) {
-        onTick({
+      // High-frequency tick for canvas / engine (at 60fps)
+      if (onTickRef.current) {
+        onTickRef.current({
           freq: stableFreq,
           note: noteInfo,
           rmsDb: db,
           resonance: res,
           fftData: freqBuf,
         });
+      }
+
+      // Throttle React state updates to ~20 FPS (every 48ms) to prevent render flooding
+      const now = performance.now();
+      if (now - lastStateUpdateRef.current >= 48) {
+        lastStateUpdateRef.current = now;
+        setRmsDb(db);
+        setCurrentFreq(stableFreq);
+        setCurrentNote(noteInfo);
+        if (stableFreq > 0) {
+          setResonance(res);
+        }
       }
 
       animFrameRef.current = requestAnimationFrame(tick);
@@ -142,7 +157,7 @@ export function usePitchDetection({
         animFrameRef.current = null;
       }
     };
-  }, [enabled, audioCtx, analyser, fftAnalyser, refFreq, noiseGate, onTick, stopDetection]);
+  }, [enabled, audioCtx, analyser, fftAnalyser, refFreq, noiseGate, stopDetection]);
 
   return {
     currentFreq,

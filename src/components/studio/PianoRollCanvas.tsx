@@ -2,6 +2,30 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { GuideNote, MidiNoteBlock, NoteInfo } from '../../types';
 import { SHARP_MAP, midiToName } from '../../utils/pitch';
 
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  radius: number
+) {
+  const r = Math.max(0, Math.min(radius, Math.floor(w / 2), Math.floor(h / 2)));
+  if (r > 0 && typeof ctx.roundRect === 'function') {
+    try {
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, r);
+      ctx.fill();
+      ctx.stroke();
+      return;
+    } catch {
+      // Fallback if browser throws invalid radius error
+    }
+  }
+  ctx.fillRect(x, y, w, h);
+  ctx.strokeRect(x, y, w, h);
+}
+
 interface PianoRollCanvasProps {
   currentT: number;
   currentFreq: number;
@@ -59,16 +83,17 @@ export const PianoRollCanvas: React.FC<PianoRollCanvasProps> = ({
   );
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const parent = canvas.parentElement;
-    const W = parent ? parent.clientWidth : 800;
-    canvas.width = W;
-    canvas.height = height;
+      const parent = canvas.parentElement;
+      const W = parent ? parent.clientWidth : 800;
+      canvas.width = W;
+      canvas.height = height;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
     ctx.clearRect(0, 0, W, height);
 
@@ -191,16 +216,7 @@ export const PianoRollCanvas: React.FC<PianoRollCanvasProps> = ({
 
       const renderX = Math.max(KEY_COL_WIDTH, x1);
       const renderW = Math.max(8, x2 - renderX);
-
-      if (ctx.roundRect) {
-        ctx.beginPath();
-        ctx.roundRect(renderX, yTop + 1, renderW, blockH, 4);
-        ctx.fill();
-        ctx.stroke();
-      } else {
-        ctx.fillRect(renderX, yTop + 1, renderW, blockH);
-        ctx.strokeRect(renderX, yTop + 1, renderW, blockH);
-      }
+      drawRoundedRect(ctx, renderX, yTop + 1, renderW, blockH, 4);
 
       if (renderW >= 24) {
         ctx.fillStyle = isHit ? '#ecfdf5' : '#e0e7ff';
@@ -246,16 +262,7 @@ export const PianoRollCanvas: React.FC<PianoRollCanvasProps> = ({
 
       const renderX = Math.max(KEY_COL_WIDTH, x1);
       const renderW = Math.max(6, x2 - renderX);
-
-      if (ctx.roundRect) {
-        ctx.beginPath();
-        ctx.roundRect(renderX, yTop + 1, renderW, blockH, 4);
-        ctx.fill();
-        ctx.stroke();
-      } else {
-        ctx.fillRect(renderX, yTop + 1, renderW, blockH);
-        ctx.strokeRect(renderX, yTop + 1, renderW, blockH);
-      }
+      drawRoundedRect(ctx, renderX, yTop + 1, renderW, blockH, 4);
 
       if (renderW >= 32) {
         ctx.fillStyle = '#ffffff';
@@ -298,6 +305,9 @@ export const PianoRollCanvas: React.FC<PianoRollCanvasProps> = ({
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 10px JetBrains Mono, monospace';
       ctx.fillText(`${currentNote.note}${currentNote.octave}`, cursorX + 12, singerY + 4);
+    }
+    } catch (err) {
+      console.warn('PianoRollCanvas rendering interrupted:', err);
     }
   }, [
     currentT,

@@ -9,7 +9,7 @@ export interface VoiceRecorderHook {
   audioBuffer: AudioBuffer | null;
   waveformPeaks: number[];
   playbackTime: number;
-  startRecording: (stream: MediaStream) => boolean;
+  startRecording: (stream?: MediaStream | null) => boolean;
   stopRecording: () => Promise<Blob | null>;
   togglePlayback: () => void;
   seekPlayback: (timeInSeconds: number) => void;
@@ -49,26 +49,34 @@ export function useVoiceRecorder(): VoiceRecorderHook {
     return peaks;
   };
 
-  const startRecording = useCallback((stream: MediaStream): boolean => {
+  const startRecording = useCallback((stream?: MediaStream | null): boolean => {
     try {
       chunksRef.current = [];
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
-      const recorder = new MediaRecorder(stream, { mimeType });
+      if (stream) {
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm';
+        const recorder = new MediaRecorder(stream, { mimeType });
 
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            chunksRef.current.push(e.data);
+          }
+        };
 
-      recorder.start(100);
-      mediaRecorderRef.current = recorder;
+        recorder.start(100);
+        mediaRecorderRef.current = recorder;
+      } else {
+        mediaRecorderRef.current = null;
+      }
+
       setIsRecording(true);
       startTimeRef.current = Date.now();
       setRecordedDuration(0);
 
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
       timerIntervalRef.current = window.setInterval(() => {
         const elapsed = (Date.now() - startTimeRef.current) / 1000;
         setRecordedDuration(elapsed);

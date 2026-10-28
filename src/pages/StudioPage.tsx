@@ -59,14 +59,27 @@ export const StudioPage: React.FC = () => {
   const [importProgress, setImportProgress] = useState<number | null>(null);
 
   // Recorded & Analyzed Data
-  const [sessionStartTime] = useState<number>(Date.now());
+  const recordStartTimeRef = useRef<number>(0);
+  const sessionStartTimeRef = useRef<number>(Date.now());
+  const currentTimeRef = useRef<number>(0);
+  const lastTimeUpdateRef = useRef<number>(0);
+  const lastTelemetryUpdateRef = useRef<number>(0);
+
   const [currentSessionTime, setCurrentSessionTime] = useState<number>(0);
   const [userMidiBlocks, setUserMidiBlocks] = useState<MidiNoteBlock[]>([]);
+  const userMidiBlocksRef = useRef<MidiNoteBlock[]>([]);
   const activeBlockRef = useRef<MidiNoteBlock | null>(null);
 
   const pitchHistoryRef = useRef<PitchHistoryItem[]>([]);
   const resonanceHistoryRef = useRef<ResonanceData[]>([]);
   const rmsHistoryRef = useRef<number[]>([]);
+
+  const [telemetryData, setTelemetryData] = useState({
+    medianNote: '—',
+    lowNote: '—',
+    highNote: '—',
+    voicedPct: 0,
+  });
 
   const [evaluationReport, setEvaluationReport] = useState<EvaluationReport | null>(null);
 
@@ -103,8 +116,17 @@ export const StudioPage: React.FC = () => {
       const activeF = isDemoMode ? demoFreq : freq;
       const activeN = isDemoMode && demoFreq > 0 ? freqToNote(demoFreq) : note;
 
-      const t = isRecording ? recordedDuration : (Date.now() - sessionStartTime) / 1000;
-      setCurrentSessionTime(t);
+      const now = Date.now();
+      const t = isRecording
+        ? Math.max(0, (now - recordStartTimeRef.current) / 1000)
+        : Math.max(0, (now - sessionStartTimeRef.current) / 1000);
+      currentTimeRef.current = t;
+
+      // Throttle currentSessionTime state for UI/Canvas to ~30 FPS
+      if (now - lastTimeUpdateRef.current >= 33) {
+        lastTimeUpdateRef.current = now;
+        setCurrentSessionTime(t);
+      }
 
       // Record telemetry history when recording
       if (isRecording) {
@@ -137,8 +159,10 @@ export const StudioPage: React.FC = () => {
             activeBlockRef.current.endT = t + 0.12;
           } else {
             // Note transition
-            if (activeBlockRef.current.endT - activeBlockRef.current.startT >= 0.15) {
-              setUserMidiBlocks((prev) => [...prev, { ...activeBlockRef.current! }]);
+            if (activeBlockRef.current.endT - activeBlockRef.current.startT >= 0.12) {
+              const blk = { ...activeBlockRef.current };
+              userMidiBlocksRef.current.push(blk);
+              setUserMidiBlocks([...userMidiBlocksRef.current]);
             }
             activeBlockRef.current = {
               midi: currentMidi,
@@ -151,15 +175,39 @@ export const StudioPage: React.FC = () => {
           }
         } else {
           if (activeBlockRef.current) {
-            if (activeBlockRef.current.endT - activeBlockRef.current.startT >= 0.15) {
-              setUserMidiBlocks((prev) => [...prev, { ...activeBlockRef.current! }]);
+            if (activeBlockRef.current.endT - activeBlockRef.current.startT >= 0.12) {
+              const blk = { ...activeBlockRef.current };
+              userMidiBlocksRef.current.push(blk);
+              setUserMidiBlocks([...userMidiBlocksRef.current]);
             }
             activeBlockRef.current = null;
           }
         }
+
+        // Throttle telemetry stats update to 2x/sec (500ms)
+        if (now - lastTelemetryUpdateRef.current >= 500) {
+          lastTelemetryUpdateRef.current = now;
+          const valid = pitchHistoryRef.current.filter((p) => p.freq > 0);
+          const freqs = valid.map((p) => p.freq).sort((a, b) => a - b);
+          const medF = freqs.length ? freqs[Math.floor(freqs.length / 2)] : 0;
+          const lowF = freqs.length ? freqs[0] : 0;
+          const highF = freqs.length ? freqs[freqs.length - 1] : 0;
+          const mN = freqToNote(medF);
+          const lN = freqToNote(lowF);
+          const hN = freqToNote(highF);
+
+          setTelemetryData({
+            medianNote: mN ? `${mN.note}${mN.octave} (${medF.toFixed(1)} Hz)` : '—',
+            lowNote: lN ? `${lN.note}${lN.octave} (${lowF.toFixed(1)} Hz)` : '—',
+            highNote: hN ? `${hN.note}${hN.octave} (${highF.toFixed(1)} Hz)` : '—',
+            voicedPct: pitchHistoryRef.current.length
+              ? Math.round((valid.length / pitchHistoryRef.current.length) * 100)
+              : 0,
+          });
+        }
       }
     },
-    [isDemoMode, demoFreq, isRecording, recordedDuration, sessionStartTime]
+    [isDemoMode, demoFreq, isRecording]
   );
 
   const { currentFreq, currentNote, rmsDb, resonance, fftData } = usePitchDetection({
@@ -228,22 +276,46 @@ export const StudioPage: React.FC = () => {
     }
     setEvaluationReport(null);
     setUserMidiBlocks([]);
+    userMidiBlocksRef.current = [];
     pitchHistoryRef.current = [];
     resonanceHistoryRef.current = [];
     rmsHistoryRef.current = [];
     activeBlockRef.current = null;
+    recordStartTimeRef.current = Date.now();
+    currentTimeRef.current = 0;
+    setCurrentSessionTime(0);
 
-    if (stream) {
-      startVoiceRecording(stream);
-    }
+    startVoiceRecording(stream);
   };
 
   const handleStopRecord = async () => {
     if (activeBlockRef.current) {
-      setUserMidiBlocks((prev) => [...prev, { ...activeBlockRef.current! }]);
+      if (activeBlockRef.current.endT - activeBlockRef.current.startT >= 0.12) {
+        userMidiBlocksRef.current.push({ ...activeBlockRef.current });
+        setUserMidiBlocks([...userMidiBlocksRef.current]);
+      }
       activeBlockRef.current = null;
     }
     await stopVoiceRecording();
+
+    // Final telemetry stats computation
+    const valid = pitchHistoryRef.current.filter((p) => p.freq > 0);
+    const freqs = valid.map((p) => p.freq).sort((a, b) => a - b);
+    const medF = freqs.length ? freqs[Math.floor(freqs.length / 2)] : 0;
+    const lowF = freqs.length ? freqs[0] : 0;
+    const highF = freqs.length ? freqs[freqs.length - 1] : 0;
+    const mN = freqToNote(medF);
+    const lN = freqToNote(lowF);
+    const hN = freqToNote(highF);
+
+    setTelemetryData({
+      medianNote: mN ? `${mN.note}${mN.octave} (${medF.toFixed(1)} Hz)` : '—',
+      lowNote: lN ? `${lN.note}${lN.octave} (${lowF.toFixed(1)} Hz)` : '—',
+      highNote: hN ? `${hN.note}${hN.octave} (${highF.toFixed(1)} Hz)` : '—',
+      voicedPct: pitchHistoryRef.current.length
+        ? Math.round((valid.length / pitchHistoryRef.current.length) * 100)
+        : 0,
+    });
   };
 
   // Auto stop if exceeding tier limit
@@ -360,25 +432,6 @@ export const StudioPage: React.FC = () => {
       alert('Gagal mengekstrak lagu. Format tidak didukung.');
       setImportProgress(null);
     }
-  };
-
-  // Telemetry computation for sidebar
-  const validPitch = pitchHistoryRef.current.filter((p) => p.freq > 0);
-  const sortedPitch = [...validPitch.map((p) => p.freq)].sort((a, b) => a - b);
-  const medFreq = sortedPitch.length ? sortedPitch[Math.floor(sortedPitch.length / 2)] : 0;
-  const lowFreq = sortedPitch.length ? sortedPitch[0] : 0;
-  const highFreq = sortedPitch.length ? sortedPitch[sortedPitch.length - 1] : 0;
-  const medN = freqToNote(medFreq);
-  const lowN = freqToNote(lowFreq);
-  const highN = freqToNote(highFreq);
-
-  const telemetryData = {
-    medianNote: medN ? `${medN.note}${medN.octave} (${medFreq.toFixed(1)} Hz)` : '—',
-    lowNote: lowN ? `${lowN.note}${lowN.octave} (${lowFreq.toFixed(1)} Hz)` : '—',
-    highNote: highN ? `${highN.note}${highN.octave} (${highFreq.toFixed(1)} Hz)` : '—',
-    voicedPct: pitchHistoryRef.current.length
-      ? Math.round((validPitch.length / pitchHistoryRef.current.length) * 100)
-      : 0,
   };
 
   // Time format MM:SS

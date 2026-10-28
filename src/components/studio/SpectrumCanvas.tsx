@@ -19,16 +19,17 @@ export const SpectrumCanvas: React.FC<SpectrumCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const parent = canvas.parentElement;
-    const W = parent ? parent.clientWidth : 800;
-    canvas.width = W;
-    canvas.height = height;
+      const parent = canvas.parentElement;
+      const W = parent ? parent.clientWidth : 800;
+      canvas.width = W;
+      canvas.height = height;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
     ctx.clearRect(0, 0, W, height);
 
@@ -89,6 +90,9 @@ export const SpectrumCanvas: React.FC<SpectrumCanvasProps> = ({
       ctx.font = 'bold 10px JetBrains Mono, monospace';
       const noteBadge = currentNote ? `[${currentNote.note}${currentNote.octave}] ` : '';
       ctx.fillText(`F0: ${fundamentalFreq.toFixed(1)} Hz ${noteBadge}`, Math.min(f0X + 5, W - 140), 16);
+    }
+    } catch (err) {
+      console.warn('SpectrumCanvas rendering interrupted:', err);
     }
   }, [fftData, sampleRate, fundamentalFreq, currentNote, height]);
 
