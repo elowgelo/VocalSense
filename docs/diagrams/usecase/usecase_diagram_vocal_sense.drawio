@@ -1,0 +1,193 @@
+<mxfile host="65bd71144e">
+    <diagram name="Use Case Diagram VocalSense AI" id="uc_vocalsense_ai">
+        <mxGraphModel dx="1200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1600" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- System Boundary Box (Monochrome Black & White) -->
+                <mxCell id="boundary" value="Sistem VocalSense AI" style="shape=rect;fillColor=none;strokeColor=#000000;strokeWidth=2;align=center;verticalAlign=top;fontSize=18;fontStyle=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="40" width="380" height="1470" as="geometry"/>
+                </mxCell>
+                
+                <!-- Primary Actor: Pengguna (Positioned on the Left, vertically centered against its 22 Use Cases) -->
+                <mxCell id="a_pengguna" value="Pengguna" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="700" width="40" height="80" as="geometry"/>
+                </mxCell>
+                
+                <!-- Secondary Actor: Administrator (Positioned on the Right, directly facing Admin Use Cases) -->
+                <mxCell id="a_admin" value="Administrator" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="650" y="1400" width="40" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_01" value="Registrasi Akun" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="80" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_01" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_01">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_02" value="Masuk ke Sistem" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="140" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_02" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_02">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_03" value="Masuk via Google OAuth" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="200" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_03" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_03">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_04" value="Pemulihan Kata Sandi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="260" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_04" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_04">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_05" value="Pengelolaan Profil Vokal" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="320" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_05" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_05">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_06" value="Tuner &amp; Kalibrasi Mikrofon" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="380" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_06" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_06">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_07" value="Tes Jangkauan Vokal" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="440" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_07" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_07">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_08" value="Perekaman Bernyanyi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="500" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_08" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_08">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_09" value="Unggah Berkas Audio" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="560" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_09" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_09">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_10" value="Putar Ulang &amp; Pangkas Vokal" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="620" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_10" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_10">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_11" value="Analisis Suara Bernyanyi AI" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="680" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_11" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_11">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_12" value="Lihat Rapor &amp; Piano Roll" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="740" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_12" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_12">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_13" value="Putar Audio Sinkron Nada Fals" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="800" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_13" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_13">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_14" value="Simpan Rapor Bernyanyi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="860" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_14" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_14">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_15" value="Ekspor Rapor &amp; Sertifikat PDF" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="920" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_15" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_15">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_16" value="Bandingkan Sesi Bernyanyi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="980" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_16" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_16">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_17" value="Lihat Dasbor Progres Vokal" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1040" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_17" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_17">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_18" value="Pelacakan Streak &amp; Lencana" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1100" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_18" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_18">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_19" value="Buat Kurikulum Latihan AI" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1160" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_19" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_19">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_20" value="Latihan Tangga Nada Terpandu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1220" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_20" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_20">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_21" value="Beli Paket Langganan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1280" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_21" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_21">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_22" value="Lihat Riwayat Tagihan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1340" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Pengguna to left edge of use case (entryX=0; entryY=0.5) -->
+                <mxCell id="edge_22" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_pengguna" target="uc_22">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_23" value="Manajemen Pengguna &amp; Tier" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1400" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Administrator to right edge of use case (entryX=1; entryY=0.5) -->
+                <mxCell id="edge_23" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_admin" target="uc_23">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_24" value="Monitoring Finansial &amp; Sistem" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="1455" width="320" height="44" as="geometry"/>
+                </mxCell>
+                <!-- Direct straight line from Administrator to right edge of use case (entryX=1; entryY=0.5) -->
+                <mxCell id="edge_24" style="endArrow=none;html=1;rounded=0;strokeColor=#000000;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="a_admin" target="uc_24">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

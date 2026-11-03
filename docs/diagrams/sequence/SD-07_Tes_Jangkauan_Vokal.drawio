@@ -1,0 +1,123 @@
+<mxfile host="65bd71144e">
+    <diagram name="SD-07 Tes Jangkauan Vokal" id="SD-07">
+        <mxGraphModel dx="1200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1653" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Lifelines (APPL Style MVC) -->
+                <mxCell id="ll_User" value="Pengguna" style="shape=umlLifeline;participant=umlActor;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;spacingTop=36;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="50" width="40" height="1060" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_View" value="Tampilan Tes Range" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="270" y="50" width="130" height="1060" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_Controller" value="VocalRangeController" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="50" width="120" height="1060" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_Service" value="VocalRangeService" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="50" width="130" height="1060" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_DB_cyl" value="&amp;lt;&amp;lt;Database&amp;gt;&amp;gt;&amp;#10;VocalProfileDB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="50" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_DB_line" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="ll_DB_cyl" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="940" y="120" as="sourcePoint"/>
+                        <mxPoint x="940" y="1110" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_1" value="1: Buka modul Vocal Range Finder" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="100" y="145" as="sourcePoint"/>
+                        <mxPoint x="335" y="145" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_2" value="2: Inisialisasi pitch detector" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="335" y="200" as="sourcePoint"/>
+                        <mxPoint x="540" y="200" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_3" value="3: Bunyikan nada panduan terendah" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="540" y="255" as="sourcePoint"/>
+                        <mxPoint x="335" y="255" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_4" value="4: Suarakan nada terendah stabil" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="100" y="310" as="sourcePoint"/>
+                        <mxPoint x="335" y="310" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_5" value="5: Kirim stream frekuensi nada rendah" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="335" y="365" as="sourcePoint"/>
+                        <mxPoint x="540" y="365" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_6" value="6: Kunci nada terendah (misal C3)" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="540" y="420" as="sourcePoint"/>
+                        <mxPoint x="745" y="420" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_7" value="7: Bunyikan nada panduan tertinggi" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="540" y="475" as="sourcePoint"/>
+                        <mxPoint x="335" y="475" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_8" value="8: Suarakan nada tertinggi stabil" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="100" y="530" as="sourcePoint"/>
+                        <mxPoint x="335" y="530" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_9" value="9: Kirim stream frekuensi nada tinggi" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="335" y="585" as="sourcePoint"/>
+                        <mxPoint x="540" y="585" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_10" value="10: Kunci nada tertinggi (misal A4)" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="540" y="640" as="sourcePoint"/>
+                        <mxPoint x="745" y="640" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_11" value="11: Klasifikasi tipe suara (Tenor) &amp; simpan" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="745" y="695" as="sourcePoint"/>
+                        <mxPoint x="940" y="695" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_12" value="12: Data jangkauan vokal tersimpan" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="940" y="750" as="sourcePoint"/>
+                        <mxPoint x="745" y="750" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_13" value="13: Kembalikan hasil klasifikasi" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="745" y="805" as="sourcePoint"/>
+                        <mxPoint x="540" y="805" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_14" value="14: Sorot tuts jangkauan nada pada piano roll" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="540" y="860" as="sourcePoint"/>
+                        <mxPoint x="335" y="860" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="msg_15" value="15: Tampilkan tipe suara penyanyi" style="html=1;verticalAlign=bottom;dashed=1;endArrow=open;edgeStyle=none;rounded=0;fontSize=10;" parent="1" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="335" y="915" as="sourcePoint"/>
+                        <mxPoint x="100" y="915" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
