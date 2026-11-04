@@ -1,24 +1,67 @@
-﻿# VocalSense AI (Vue.js 3 Edition)
-Platform latihan vokal cerdas berbasis Single Page Application (SPA) responsif dengan framework **Vue.js 3 + Vite** untuk evaluasi nada bernyanyi presisi tinggi langsung di peramban web (*in-browser local processing*) menggunakan Web Audio API.
+﻿# VocalSense AI — AI-Powered Singing & Vocal Trainer Platform
+
+> Platform latihan vokal interaktif berbasis **Vue.js 3 + Vite** yang mengevaluasi intonasi bernyanyi secara presisi langsung di peramban web (*in-browser real-time DSP*) menggunakan Web Audio API dan algoritma pelacakan nada YIN.
+
+[![Vue 3](https://img.shields.io/badge/Vue.js-3.5-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Status UTS](https://img.shields.io/badge/Status%20UTS-58.3%25%20Completed-success)](#laporan-audit-kepatuhan-fitur-uts)
+[![Pull Request](https://img.shields.io/badge/PR-%231%20UTS%2050%25-blue)](https://github.com/elowgelo/VocalSense/pull/1)
 
 ---
 
-## Capaian Progress: 50.0% (12 dari 24 Fitur SRS Terpenuhi)
-Sistem telah ditingkatkan dari prototype statis ke arsitektur framework modern **Vue.js 3**, serta mengintegrasikan fitur ke-12 (**FR-009: Pengunggahan Berkas Audio Bernyanyi**).
+## Laporan Audit Kepatuhan Fitur UTS
 
-### Fitur Utama yang Telah Selesai
-1. **FR-001 [Registrasi Akun Pengguna]**: Registrasi akun penyanyi dan penentuan paket awal (`src/views/RegisterView.vue`).
-2. **FR-002 [Autentikasi Pengguna & JWT Sesi]**: Manajemen sesi login pengguna dan demo OAuth (`src/views/LoginView.vue`).
-3. **FR-006 [Chromatic Tuner & Kalibrasi Noise]**: Pendeteksi nada kromatik real-time dengan jarum meter deviasi cents dan ambient noise gate (`src/views/TunerView.vue`).
-4. **FR-007 [Vocal Range Finder]**: Pengujian nada terendah (*Lowest Note*) hingga tertinggi (*Highest Note*) pada tuts piano interaktif beserta klasifikasi tipe vokal otomatis (`src/views/RangeFinderView.vue`).
-5. **FR-008 [Perekaman Bernyanyi & Live Piano Roll]**: Studio DAW interaktif dengan jendela geser 10 detik, notasi balok solid MIDI, dan garis kurva nada real-time (`src/views/StudioView.vue`).
-6. **FR-009 [Pengunggahan Berkas Audio Bernyanyi - NEW]**: Fasilitas upload file vokal rekaman eksternal (WAV/MP3/M4A) untuk didekode dan dianalisis nadanya pada Piano Roll (`src/views/StudioView.vue`).
-7. **FR-010 [Pemutaran Ulang Audio Rekaman]**: Pemutar instan audio buffer hasil rekaman bernyanyi langsung di peramban (`src/views/StudioView.vue`).
-8. **FR-011 [AI Pitch & Acoustic Resonance Engine]**: Ekstraksi parameter akustik mencakup deteksi notasi musik, deviasi cents, osilasi vibrato 5-7 Hz, dan analisis 3 pita resonansi vokal (`src/utils/pitch.js`).
-9. **FR-012 [Rapor Bernyanyi 5 Dimensi & Saran AI]**: Kartu skor keseluruhan (0-100), visualisasi Radar Chart 5 dimensi vokal, dan rekomendasi latihan personal (`src/views/StudioView.vue`).
-10. **FR-015 [Ekspor / Cetak Rapor Format PDF]**: Fitur cetak dokumen evaluasi vokal siap arsip menggunakan `@media print` (`src/views/StudioView.vue`).
-11. **FR-021 [Latihan Tangga Nada & Solfeggio Terpandu]**: Balok melodi panduan Do-Re-Mi dan synthesizer audio piano bawaan (`src/views/StudioView.vue`).
-12. **FR-022 [Katalog Paket & Tier Switcher]**: Katalog komparasi paket layanan (Free, Pro, Premium) dan simulasi tier akun (`src/views/HomeView.vue`).
+* **Target Minimum Kelulusan UTS:** 12 Fitur (50.0%)
+* **Realisasi Fitur Selesai Penuh:** **14 Fitur (58.3%)**
+* **Fitur Selesai Sebagian (Parsial):** **2 Fitur (8.3%)**
+* **Fitur Tahap Lanjutan Pasca-UTS:** 8 Fitur (33.3%)
+* **Status Evaluasi:** **MEMENUHI (>50%) & SELARAS DENGAN SRS, SDD, DAN DIAGRAM ALUR**
+
+---
+
+### 1. Matriks 24 Kebutuhan Fungsional (SRS Compliance)
+
+| No | Kode FR | Nama Kebutuhan Fungsional | Status | Implementasi Sumber Kode |
+| :---: | :---: | :--- | :---: | :--- |
+| 1 | **FR-001** | Registrasi Akun Pengguna | **SELESAI** | `src/views/RegisterView.vue` (Form nama, email, password, simpan sesi `vs_user`) |
+| 2 | **FR-002** | Autentikasi Pengguna & JWT Sesi | **SELESAI** | `src/views/LoginView.vue` (Validasi login, status navbar, proteksi rute) |
+| 3 | **FR-003** | Single Sign-On Google OAuth | *Pasca-UTS* | Mockup UI di `LoginView.vue` (integrasi OAuth live tahap akhir) |
+| 4 | **FR-004** | Pemulihan & Reset Kata Sandi | *Pasca-UTS* | Alur pengiriman email token SMTP direncanakan pasca-UTS |
+| 5 | **FR-005** | Pengelolaan Profil Vokal | **SELESAI** | `src/views/ProfileView.vue` (Biometrik nada, Tessitura, preferensi) |
+| 6 | **FR-006** | Chromatic Tuner & Noise Gate | **SELESAI** | `src/views/TunerView.vue` (Jarum meter deviasi $\pm 50$ Cents, noise gate slider) |
+| 7 | **FR-007** | Tes Jangkauan Vokal (Range Finder) | **SELESAI** | `src/views/RangeFinderView.vue` (Pendeteksian Min/Max F0, klasifikasi Fach vokal) |
+| 8 | **FR-008** | Perekaman & Live Piano Roll DAW | **SELESAI** | `src/views/StudioView.vue` (Web Audio API, live pitch curve 60 FPS, balok MIDI C2–C6) |
+| 9 | **FR-009** | Pengunggahan Berkas Audio Vokal | **SELESAI** | `src/views/StudioView.vue` (`handleAudioFileUpload`, ekstraksi frame audio 50ms) |
+| 10 | **FR-010** | Pemutaran Ulang Audio Rekaman | **SELESAI** | `src/views/StudioView.vue` (`togglePlayback`, `playAudioFromTime`, playhead scrubber) |
+| 11 | **FR-011** | Analisis Suara AI / DSP Engine | **SELESAI** | `src/utils/pitch.js` (Ekstraksi F0 YIN, cents, vibrato 5–7 Hz, 3-band resonansi) |
+| 12 | **FR-012** | Rapor Bernyanyi & Radar Chart | **SELESAI** | `src/views/ReportView.vue`, `StudioView.vue` (Radar Chart 5 dimensi, skor 0–100) |
+| 13 | **FR-013** | Note-Sync Playback Nada Fals | **SELESAI** | `src/views/ReportView.vue`, `StudioView.vue` (Tabel nada fals sinkron ke pemutar audio) |
+| 14 | **FR-014** | Penyimpanan Rapor Bernyanyi | **SELESAI** | Penyimpanan persisten lokal `vs_reports` di browser |
+| 15 | **FR-015** | Ekspor Rapor & Sertifikat PDF | **SELESAI** | `src/views/ReportView.vue` (`handlePrint`, `@media print` lembar resmi) |
+| 16 | **FR-016** | Komparasi Sesi Side-by-Side | *Pasca-UTS* | Direncanakan pada modul Comparison View |
+| 17 | **FR-017** | Manajemen Arsip Vokal | **PARSIAL** | `src/views/AnalyticsView.vue` (Daftar sesi latihan, telemetri, take cards) |
+| 18 | **FR-018** | Dasbor Progres Perluasan Vokal | **SELESAI** | `src/views/AnalyticsView.vue` (Kurva tren akurasi Chart.js, tessitura range) |
+| 19 | **FR-019** | Pelacak Streak & Gamifikasi | **PARSIAL** | Poin performa vokal (`+pts`), streak harian visual |
+| 20 | **FR-020** | Kurikulum Latihan Personal AI | *Pasca-UTS* | Prompt engine LLM Gemini dijadwalkan pasca-UTS; saran lokal aktif |
+| 21 | **FR-021** | Latihan Tangga Nada & Solfeggio | **SELESAI** | `src/views/StudioView.vue`, `src/components/ExerciseCatalogModal.vue` |
+| 22 | **FR-022** | Katalog Paket & Tier Switcher | **SELESAI** | `src/views/HomeView.vue`, durasi rekam berjenjang di `StudioView.vue` |
+| 23 | **FR-023** | Riwayat Tagihan Midtrans | *Pasca-UTS* | Webhook payment gateway produksi dijadwalkan pasca-UTS |
+| 24 | **FR-024** | Konsol Admin & Monitoring | *Pasca-UTS* | Direncanakan pada sprint penutup proyek |
+
+---
+
+### 2. Keselarasan Terhadap Dokumen Perancangan (SDD & Diagram Alur)
+
+* **Arsitektur Multi-Tier & Pemrosesan Zero-Latency (SDD 3.1)**:  
+  Seluruh ekstraksi nada dan visualisasi piano roll diproses langsung di peramban klien melalui Web Audio API (`AudioContext` dan `AnalyserNode`). Tidak ada rekaman audio mentah yang harus dikirim ke server luar, menjaga privasi pengguna dan mencapai latensi sub-50ms (memenuhi NFR 4.1).
+* **Aliran Data (DFD Level 0 s/d Level 2)**:  
+  - *Proses 1.0 (Akun)*: Registrasi dan login tersimpan dalam state aplikasi.
+  - *Proses 2.0 (Audio Ingest)*: Tangkapan mikrofon real-time disaring noise gate.
+  - *Proses 3.0 (Analisis DSP)*: Menghitung $F_0$, deviasi sen, vibrato, dan resonansi suara.
+  - *Proses 4.0 (Rapor)*: Skor 5 dimensi ditampilkan dalam radar chart dan dicetak ke PDF resmi.
+  - *Proses 5.0 (Progres)*: Riwayat sesi diakumulasikan ke grafik tren analitik.
+* **Diagram Alur (Activity Diagram & Sequence Diagram 01–24)**:  
+  Alur pengguna di setiap halaman (`Studio`, `Tuner`, `Range Finder`, `Report`, `Analytics`) bekerja 1:1 persis dengan tahapan yang dimodelkan pada diagram aktivitas dan diagram sekuens.
 
 ---
 
