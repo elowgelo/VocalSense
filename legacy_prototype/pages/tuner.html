@@ -1,0 +1,340 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chromatic Tuner — VocalSense AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .page-header { padding: 2.5rem 0 1.5rem; }
+    .page-header h1 { font-size: 1.75rem; font-weight: 800; }
+    .page-header p { color: var(--text2); margin-top: 0.4rem; }
+
+    /* Tuner visual */
+    .tuner-main {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 2rem; max-width: 480px; margin: 0 auto;
+    }
+    .tuner-arc-wrap { position: relative; width: 320px; height: 180px; }
+    .tuner-arc-wrap svg { width: 100%; height: 100%; }
+    .arc-bg { fill: none; stroke: var(--bg3); stroke-width: 24; stroke-linecap: round; }
+    .arc-fill { fill: none; stroke-width: 24; stroke-linecap: round; transition: stroke-dashoffset 0.12s, stroke 0.2s; }
+    .arc-center-line { stroke: var(--text3); stroke-width: 2; }
+
+    /* Note big display */
+    .tuner-note-name {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      font-size: 5rem; font-weight: 900; line-height: 1; text-align: center;
+      letter-spacing: -3px; color: var(--text); font-family: var(--font-mono);
+    }
+    .tuner-note-name sup { font-size: 2.5rem; color: var(--text2); vertical-align: super; font-family: var(--font-mono); }
+    .tuner-freq { text-align: center; font-size: 1rem; color: var(--text2); margin-top: 0.25rem; font-family: var(--font-mono); }
+    .tuner-cents {
+      font-size: 2rem; font-weight: 800; text-align: center;
+      transition: color 0.2s; font-family: var(--font-mono);
+    }
+    .tuner-status { font-size: 1rem; font-weight: 600; text-align: center; margin-top: 0.25rem; }
+
+    /* Needle meter */
+    .needle-meter {
+      width: 100%; height: 56px; background: var(--bg3);
+      border-radius: var(--radius-sm); position: relative; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .needle-zones {
+      position: absolute; inset: 0; display: flex;
+    }
+    .zone-flat   { flex: 1; background: rgba(239,68,68,0.08); }
+    .zone-center { width: 60px; background: rgba(16,185,129,0.12); }
+    .zone-sharp  { flex: 1; background: rgba(245,158,11,0.08); }
+    .needle-center-mark {
+      position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
+      background: var(--border); transform: translateX(-50%);
+    }
+    .needle-pin {
+      position: absolute; top: 8px; bottom: 8px; width: 2px;
+      border-radius: 1px; background: var(--text);
+      transform: translateX(-50%); left: 50%;
+      transition: left 0.12s ease, background 0.2s;
+    }
+    .needle-labels {
+      display: flex; justify-content: space-between; padding: 0.3rem 0.75rem;
+      font-size: 0.72rem; color: var(--text3);
+    }
+
+    /* Controls */
+    .tuner-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .reference-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; }
+    .reference-row label { color: var(--text2); }
+    .reference-row input[type=range] { width: 120px; accent-color: var(--accent); }
+    .reference-val { color: var(--accent2); font-weight: 600; min-width: 60px; }
+
+    /* Noise gate */
+    .noise-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; }
+    .noise-row label { color: var(--text2); }
+
+    /* History mini chart */
+    #historyCanvas { border-radius: var(--radius-sm); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <div class="logo-icon">VS</div>
+    <span>VocalSense AI</span>
+  </a>
+  <div class="navbar-nav">
+    <a href="../index.html" class="nav-link">Beranda</a>
+    <a href="studio.html" class="nav-link">Studio</a>
+    <a href="tuner.html" class="nav-link active">Tuner</a>
+    <a href="range-finder.html" class="nav-link">Jangkauan Vokal</a>
+  </div>
+  <div class="navbar-actions" id="navAuth"></div>
+</nav>
+
+<div class="page">
+  <div class="container">
+    <div class="page-header">
+      <h1>Tuner nada kromatik</h1>
+      <p>Pemeriksaan pitch vokal langsung untuk membantu menjaga ketepatan intonasi.</p>
+    </div>
+
+    <div class="tuner-main">
+      <!-- Start button -->
+      <div id="startSection" class="text-center">
+        <p class="text-muted mb-3">Izinkan akses mikrofon untuk memulai tuner</p>
+        <button class="btn btn-primary btn-lg" onclick="startTuner()">Aktifkan Tuner</button>
+      </div>
+
+      <!-- Tuner display (hidden until started) -->
+      <div id="tunerDisplay" class="hidden" style="width:100%">
+        <!-- Arc meter -->
+        <div style="position:relative;width:320px;margin:0 auto 1rem">
+          <svg viewBox="0 0 320 180" style="width:320px;height:180px">
+            <!-- Background arc (semicircle top) -->
+            <path id="arcBg" class="arc-bg"
+              d="M 30 160 A 130 130 0 0 1 290 160"
+              stroke="var(--bg3)" stroke-width="24" fill="none" stroke-linecap="round"/>
+            <!-- Color fill arc -->
+            <path id="arcFill" class="arc-fill"
+              d="M 30 160 A 130 130 0 0 1 290 160"
+              stroke="var(--text3)" stroke-width="24" fill="none" stroke-linecap="round"
+              stroke-dasharray="408" stroke-dashoffset="204"/>
+            <!-- Center tick -->
+            <line x1="160" y1="30" x2="160" y2="50" stroke="var(--text3)" stroke-width="2"/>
+            <!-- Labels -->
+            <text x="15" y="175" fill="var(--text3)" font-size="11">Fals Bawah</text>
+            <text x="250" y="175" fill="var(--text3)" font-size="11">Fals Atas</text>
+            <text x="132" y="22" fill="var(--text3)" font-size="11">Tepat Nada</text>
+          </svg>
+          <!-- Note overlay -->
+          <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);text-align:center">
+            <div id="bigNote" style="font-size:4.5rem;font-weight:900;line-height:1;letter-spacing:-2px">—</div>
+            <div id="bigFreq" style="font-size:0.9rem;color:var(--text2);margin-top:0.2rem">— Hz</div>
+          </div>
+        </div>
+
+        <!-- Cents display -->
+        <div id="centsDisplay" class="tuner-cents" style="color:var(--text3)">± 0 sen</div>
+        <div id="statusDisplay" class="tuner-status text-muted">Menunggu suara...</div>
+
+        <!-- Linear needle meter -->
+        <div style="width:100%">
+          <div class="needle-meter">
+            <div class="needle-zones">
+              <div class="zone-flat"></div>
+              <div class="zone-center"></div>
+              <div class="zone-sharp"></div>
+            </div>
+            <div class="needle-center-mark"></div>
+            <div class="needle-pin" id="needlePin"></div>
+          </div>
+          <div class="needle-labels">
+            <span>-50 sen</span><span>-25 sen</span><span>0</span><span>+25 sen</span><span>+50 sen</span>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="card" style="width:100%">
+          <div class="tuner-controls">
+            <div class="reference-row">
+              <label>Referensi Nada A4:</label>
+              <input type="range" id="refPitch" min="420" max="460" value="440" step="1" oninput="updateRef(this.value)" />
+              <span class="reference-val" id="refVal">440 Hz</span>
+            </div>
+            <div class="noise-row">
+              <label>Ambang Batas Suara:</label>
+              <input type="range" id="noiseGate" min="0" max="50" value="10" step="1" />
+              <span class="reference-val" id="ngVal">10</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pitch history mini display -->
+        <div style="width:100%">
+          <div class="card-title text-sm mb-2">Riwayat Nada Sepanjang 10 Detik</div>
+          <div class="canvas-wrap" style="height:80px">
+            <canvas id="historyCanvas" style="width:100%;height:80px"></canvas>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="stopTuner()">Hentikan Tuner</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/pitch.js"></script>
+<script>
+  // Auth nav
+  const user = JSON.parse(localStorage.getItem('vs_user') || 'null');
+  const navAuth = document.getElementById('navAuth');
+  navAuth.innerHTML = user
+    ? `<span class="text-sm text-muted mr-2">${user.name}</span><a href="login.html" class="btn btn-outline btn-sm" onclick="localStorage.removeItem('vs_user')">Keluar</a>`
+    : `<a href="login.html" class="btn btn-outline btn-sm">Masuk</a><a href="register.html" class="btn btn-primary btn-sm">Daftar</a>`;
+
+  let audioCtx, analyser, source, stream, animFrame;
+  let refFreq = 440;
+  let running = false;
+  const historyBuf = new Array(100).fill(0);
+  const ARC_LEN = 408;
+
+  document.getElementById('noiseGate').addEventListener('input', function() {
+    document.getElementById('ngVal').textContent = this.value;
+  });
+
+  function updateRef(val) {
+    refFreq = +val;
+    document.getElementById('refVal').textContent = val + ' Hz';
+  }
+
+  async function startTuner() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch(e) {
+      alert('Akses mikrofon ditolak. Silakan izinkan di pengaturan browser.');
+      return;
+    }
+    audioCtx = new AudioContext();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    document.getElementById('startSection').classList.add('hidden');
+    document.getElementById('tunerDisplay').classList.remove('hidden');
+
+    const hCanvas = document.getElementById('historyCanvas');
+    hCanvas.width = hCanvas.offsetWidth;
+    hCanvas.height = 80;
+
+    running = true;
+    tick();
+  }
+
+  function stopTuner() {
+    running = false;
+    cancelAnimationFrame(animFrame);
+    stream?.getTracks().forEach(t => t.stop());
+    audioCtx?.close();
+    document.getElementById('startSection').classList.remove('hidden');
+    document.getElementById('tunerDisplay').classList.add('hidden');
+  }
+
+  const buf = new Float32Array(2048);
+  function tick() {
+    if (!running) return;
+    animFrame = requestAnimationFrame(tick);
+
+    analyser.getFloatTimeDomainData(buf);
+    const noiseGate = +document.getElementById('noiseGate').value / 1000;
+    const pitch = PitchUtils.detectPitch(buf, audioCtx.sampleRate);
+
+    historyBuf.shift();
+    historyBuf.push(pitch > 0 ? pitch : 0);
+    drawHistory();
+
+    if (pitch <= 0) {
+      document.getElementById('bigNote').textContent = '—';
+      document.getElementById('bigFreq').textContent = '— Hz';
+      document.getElementById('centsDisplay').textContent = '± 0 sen';
+      document.getElementById('statusDisplay').textContent = 'Menunggu suara...';
+      document.getElementById('statusDisplay').className = 'tuner-status text-muted';
+      setNeedle(0, 'var(--text3)');
+      setArc(0, 'var(--text3)');
+      return;
+    }
+
+    // Compute using custom reference
+    const midi = 12 * Math.log2(pitch / refFreq) + 69;
+    const midiR = Math.round(midi);
+    const cents = Math.round((midi - midiR) * 100);
+    const oct = Math.floor(midiR / 12) - 1;
+    const note = PitchUtils.NOTE_NAMES[((midiR % 12) + 12) % 12];
+
+    document.getElementById('bigNote').textContent = `${note}${oct}`;
+    document.getElementById('bigFreq').textContent = `${pitch.toFixed(1)} Hz`;
+    document.getElementById('centsDisplay').textContent = `${cents >= 0 ? '+' : ''}${cents} sen`;
+
+    let color, statusText, statusClass;
+    if (cents < -20)     { color = 'var(--red)';    statusText = 'Terlalu rendah'; statusClass = 'tuner-status text-red font-bold'; }
+    else if (cents > 20) { color = 'var(--yellow)'; statusText = 'Terlalu tinggi'; statusClass = 'tuner-status text-yellow font-bold'; }
+    else                 { color = 'var(--green)';  statusText = 'Intonasi tepat'; statusClass = 'tuner-status text-green font-bold'; }
+
+    document.getElementById('centsDisplay').style.color = color;
+    document.getElementById('statusDisplay').textContent = statusText;
+    document.getElementById('statusDisplay').className = statusClass;
+    setNeedle(cents, color);
+    setArc(cents, color);
+  }
+
+  function setNeedle(cents, color) {
+    const pin = document.getElementById('needlePin');
+    // Map cents (-50..50) to 5%..95%
+    const pct = 50 + (cents / 50) * 45;
+    pin.style.left = Math.max(5, Math.min(95, pct)) + '%';
+    pin.style.background = color;
+    pin.style.boxShadow = `0 0 8px ${color}`;
+  }
+
+  function setArc(cents, color) {
+    const arc = document.getElementById('arcFill');
+    // Full arc = 408 units; needle at offset=204 = center
+    // positive cents → less offset (more arc visible); negative → more offset
+    const offset = 204 - (cents / 50) * 150;
+    arc.style.strokeDashoffset = Math.max(0, Math.min(408, offset));
+    arc.style.stroke = color;
+  }
+
+  function drawHistory() {
+    const canvas = document.getElementById('historyCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const valids = historyBuf.filter(h => h > 0);
+    if (!valids.length) return;
+    const minF = Math.min(...valids) * 0.95;
+    const maxF = Math.max(...valids) * 1.05;
+
+    ctx.strokeStyle = 'rgba(168,85,247,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let first = true;
+    historyBuf.forEach((h, i) => {
+      if (h <= 0) { first = true; return; }
+      const x = (i / (historyBuf.length - 1)) * W;
+      const y = H - ((h - minF) / (maxF - minF)) * H;
+      if (first) { ctx.moveTo(x, y); first = false; }
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+</script>
+</body>
+</html>
+
+

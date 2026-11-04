@@ -1,0 +1,3177 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singing Studio — VocalSense AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .page-header { padding: 1.75rem 0 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    .page-header p { color: var(--text2); font-size: 0.85rem; margin-top: 0.2rem; }
+    .studio-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 1.25rem; align-items: start; width: 100%; }
+    @media(max-width:1080px) { .studio-layout { grid-template-columns: 1fr; } }
+    .studio-container { width: 100%; max-width: 1360px; margin: 0 auto; padding: 0 1.5rem; }
+    /* Canvas styling */
+    .canvas-panel {
+      border: 1px solid var(--border); background: #ffffff;
+      border-radius: var(--radius);
+      padding: 0.9rem; margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .canvas-title-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.65rem; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.4px; color: var(--text2);
+    }
+    #spectrumCanvas { width: 100%; height: 95px; display: block; background: #090d16; border-radius: var(--radius-sm); border: 1px solid #1e293b; }
+    #pitchRollCanvas { width: 100%; height: 560px; display: block; background: #090d16; border-radius: var(--radius-sm); border: 1px solid #1e293b; }
+    /* Control Bar */
+    .control-bar {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+      padding: 0.75rem 1rem; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow-sm); margin-bottom: 0.85rem;
+    }
+    .timer-display {
+      font-family: var(--font-mono);
+      font-size: 1.3rem; font-weight: 700; min-width: 60px;
+      color: var(--text);
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.3px; padding: 0.2rem 0.55rem; border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--bg3);
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
+    .status-dot.active { background: var(--red); box-shadow: 0 0 8px rgba(239, 68, 68, 0.8); animation: pulse 1s step-end infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .level-meter-wrap { flex: 1; min-width: 110px; display: flex; flex-direction: column; gap: 2px; }
+    .level-meter-track { height: 6px; background: var(--bg3); border-radius: var(--radius-full); overflow: hidden; border: 1px solid var(--border); }
+    .level-meter-bar { height: 100%; width: 0%; background: var(--text); border-radius: var(--radius-full); transition: width 0.08s ease-out; }
+    .piano-deck-toolbar {
+      display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 0.75rem;
+      padding: 0.75rem 0.85rem; background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .piano-deck-row {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.65rem;
+    }
+    
+    /* Live stats */
+    .note-display-box { text-align: center; padding: 1.5rem 0.5rem; border-bottom: 1px solid var(--border); background: var(--bg2); }
+    .note-display-val { font-size: 3.8rem; font-weight: 800; line-height: 1; letter-spacing: -1.5px; font-family: var(--font-mono); color: var(--text); }
+    .note-cents-val { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; margin-top: 0.4rem; }
+    .note-freq-val { font-size: 0.85rem; color: var(--text2); margin-top: 0.25rem; font-family: var(--font-mono); }
+    .guide-status { display: flex; align-items: center; gap: 0.5rem; color: var(--text2); font-size: 0.72rem; font-weight: 600; }
+    .guide-status strong { color: var(--text); font-family: var(--font-mono); }
+    .focus-summary { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; padding-bottom: 0.75rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+    .focus-summary strong { font-size: 1rem; color: var(--text); }
+    .focus-summary span { font-family: var(--font-mono); color: var(--accent); font-weight: 700; }
+    .chart-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.45rem 0.75rem; margin-top: 1rem; font-size: 0.72rem; color: var(--text2); }
+    .chart-legend b { color: var(--text); font-family: var(--font-mono); font-weight: 700; }
+    /* Report Section */
+    #reportSection { margin-top: 2rem; border-top: 2px solid var(--accent); padding-top: 1.5rem; }
+    .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media(max-width:768px) { .report-grid { grid-template-columns: 1fr; } }
+    .score-box { text-align: center; padding: 1.5rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); box-shadow: var(--shadow); }
+    .score-number { font-size: 3.5rem; font-weight: 800; line-height: 1; font-family: var(--font-mono); color: var(--accent); }
+    .score-status { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-top: 0.4rem; }
+    .chips-container { display: flex; flex-wrap: wrap; gap: 6px; max-height: 100px; overflow-y: auto; margin-top: 0.75rem; }
+    .metric-chip {
+      padding: 2px 7px; font-size: 0.72rem; font-family: var(--font-mono); font-weight: 500;
+      border: 1px solid var(--border); border-radius: 2px; background: #ffffff;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .metric-chip.in-tune { border-color: #059669; color: #065f46; background: #f0fdf4; }
+    .metric-chip.flat    { border-color: #dc2626; color: #991b1b; background: #fef2f2; }
+    .metric-chip.sharp   { border-color: #d97706; color: #92400e; background: #fffbeb; }
+    .table-metrics { width: 100%; border-collapse: collapse; font-size: 0.825rem; }
+    .table-metrics td { padding: 0.55rem 0.35rem; border-bottom: 1px solid var(--border); }
+    .table-metrics td:last-child { text-align: right; font-weight: 600; font-family: var(--font-mono); color: var(--text); }
+    .rec-item { padding: 0.65rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+    .rec-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="../index.html" class="navbar-brand">
+    <div class="logo-icon">VS</div>
+    <span>VocalSense AI</span>
+  </a>
+  <div class="navbar-nav">
+    <a href="../index.html" class="nav-link">Beranda</a>
+    <a href="studio.html" class="nav-link active">Studio</a>
+    <a href="tuner.html" class="nav-link">Tuner</a>
+    <a href="range-finder.html" class="nav-link">Jangkauan Vokal</a>
+  </div>
+  <div class="navbar-actions" id="navAuth"></div>
+</nav>
+<div class="page">
+  <div class="container">
+    <div class="page-header d-flex justify-between align-center flex-wrap gap-1">
+      <div>
+        <h1>Studio Bernyanyi &amp; Cek Nada</h1>
+        <p>Latihan vokal interaktif, deteksi ketepatan nada real-time, dan evaluasi suara otomatis.</p>
+      </div>
+      <div class="d-flex align-center gap-1">
+        <span class="badge" id="tierBadge">GRATIS</span>
+      </div>
+    </div>
+    <!-- Microphone initialization prompt -->
+    <div id="permSection" class="card text-center" style="padding: 3.5rem 1.5rem; margin: 1rem 0;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Aktifkan Mikrofon Anda</h2>
+      <p class="text-muted text-sm" style="max-width: 500px; margin: 0 auto 1.5rem;">
+        Pemrosesan suara berlangsung 100% aman di peramban Anda. Tidak ada rekaman suara yang diunggah ke internet atau server.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary btn-lg" onclick="initMic()">Izinkan Mikrofon &amp; Mulai</button>
+        <button class="btn btn-outline btn-lg" id="btnBypassPerm" onclick="openStudioDirect()">Gunakan Mode Latihan Mandiri</button>
+      </div>
+    </div>
+    <!-- Main Studio Dashboard -->
+    <div id="studioMain" class="hidden">
+      <!-- Material Latihan & Oktaf Presets -->
+      <div class="card mb-2" style="padding: 0.75rem 1rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+          <!-- Left: Latihan & Oktaf Presets -->
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <span class="text-xs font-bold text-muted" style="letter-spacing: 0.5px;">Latihan:</span>
+              <select id="exerciseSelect" class="form-control" style="width: auto; padding: 0.35rem 0.65rem; font-size: 0.8rem; height: 32px;" onchange="changeExercisePreset()">
+                <option value="scale">Tangga Nada Solmisasi</option>
+                <option value="arpeggio">Lompatan Nada Akor</option>
+                <option value="twinkle">Melodi Bintang Kecil</option>
+                <option value="custom">Lagu Pengiring Mandiri</option>
+                <option value="free">Bebas Tanpa Panduan Balok</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <span class="text-xs font-bold text-muted" style="letter-spacing: 0.5px;">Kunci:</span>
+              <select id="keyTransposeSelect" class="form-control" style="width: auto; padding: 0.35rem 0.65rem; font-size: 0.8rem; height: 32px;" onchange="changeKeyTranspose()">
+                <option value="-12">Rendah, C3 untuk Suara Pria</option>
+                <option value="0" selected>Standar, C4 untuk Rentang Menengah</option>
+                <option value="12">Tinggi, C5 untuk Suara Wanita</option>
+              </select>
+            </div>
+            <!-- Import Lagu Karaoke Button & Hidden Input -->
+            <input type="file" id="customAudioInput" accept="audio/*" style="display: none;" onchange="handleCustomSongUpload(event)">
+            <input type="file" id="backingAudioInput" accept="audio/*" style="display: none;" onchange="handleBackingTrackUpload(event)">
+            
+            <button class="btn btn-sm btn-outline" id="btnImportSong" onclick="openImportModal()" title="Import lagu untuk latihan vokal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Import Lagu</span>
+            </button>
+            <span id="customSongLabel" class="text-xs text-muted font-bold" style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: none;"></span>
+            <span id="importProgressBadge" class="badge badge-purple hidden" style="font-size: 0.72rem; padding: 3px 8px; animation: pulse 1.5s infinite;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; animation: spin 1s linear infinite; vertical-align: middle; margin-right: 4px;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
+              <span id="importProgressText">AI Menganalisis Vokal...</span>
+            </span>
+          </div>
+
+          <!-- Center: Audio Actions -->
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-outline" id="btnGuideAudio" onclick="toggleGuideAudio()" title="Dengarkan melodi panduan piano sebelum Anda menyanyi">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v8"/><path d="M12 5v8"/><path d="M17 5v8"/></svg>
+              <span>Putar Panduan Piano</span>
+            </button>
+            <button class="btn btn-sm btn-outline" id="btnDemoMode" onclick="toggleDemoVocal()" title="Simulasi deteksi vokal untuk demonstrasi">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Simulasi Vokal</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Two-column workspace -->
+      <div class="studio-layout">
+        <!-- Left: Audio Canvases -->
+        <div>
+          <!-- Canvas 1: Real-time Sound Spectrum -->
+          <div class="canvas-panel">
+            <div class="canvas-title-row">
+              <span>Grafik Frekuensi &amp; Kejernihan Suara</span>
+              <span id="spectralCentroidText" style="font-family: var(--font-mono);">Karakter: Normal</span>
+            </div>
+            <canvas id="spectrumCanvas"></canvas>
+            <div class="d-flex justify-between text-xs text-muted mt-1" style="font-family: var(--font-mono); font-size: 0.7rem;">
+              <span>55 Hz</span>
+              <span>Suara Dada Rendah</span>
+              <span>Suara Campuran Tengah</span>
+              <span>Suara Kepala Tinggi</span>
+              <span>5000 Hz</span>
+            </div>
+          </div>
+          <!-- Canvas 2: Synchronized Piano Roll with Integrated Recording & Playback Deck -->
+          <div class="canvas-panel">
+            <!-- Bilah Kontrol Rekam & Pemutaran Terpadu di Papan Piano -->
+            <div class="piano-deck-toolbar">
+              <!-- Baris Atas: Kontrol Rekam & Level Suara -->
+              <div class="piano-deck-row">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <div class="status-badge" id="engineStatus">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">STOPPED</span>
+                  </div>
+                  <button class="btn btn-sm btn-danger" id="btnRecord" onclick="startRecording()">Mulai Rekam</button>
+                  <button class="btn btn-sm btn-outline" id="btnStop" onclick="stopRecording()" disabled>Berhenti</button>
+                  <div class="timer-display" id="recTimer" style="font-size: 1.05rem; min-width: 48px;">00:00</div>
+                  <span class="text-xs text-muted" id="recLimitText">Batas 60s</span>
+                </div>
+
+                <div class="level-meter-wrap" style="max-width: 180px;">
+                  <div class="d-flex justify-between text-xs text-muted" style="font-size: 0.68rem;">
+                    <span>Level Mikrofon</span>
+                    <span id="rmsDbVal">-inf dB</span>
+                  </div>
+                  <div class="level-meter-track">
+                    <div class="level-meter-bar" id="levelBar"></div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <button class="btn btn-sm btn-primary" id="btnAnalyze" onclick="analyzeVoice()" disabled>Lihat Nilai Vokal</button>
+                </div>
+              </div>
+
+              <!-- Baris Bawah: Playback Audio & Navigasi Papan Piano -->
+              <div class="piano-deck-row">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <button class="btn btn-sm btn-outline" id="btnPlaybackToggle" onclick="toggleAudioPlayback()" title="Putar atau jeda audio lagu/rekaman">
+                    <svg id="playbackIcon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span id="playbackBtnText">Putar Lagu</span>
+                  </button>
+                  <button class="btn btn-sm btn-outline" id="btnPauseRoll" onclick="togglePauseRoll()" title="Jeda atau lanjutkan jalannya papan notasi" style="padding: 0.25rem 0.5rem; font-size: 0.72rem;">
+                    <span id="pauseBtnText">Jeda Kanvas</span>
+                  </button>
+                  <button class="btn btn-sm btn-outline" onclick="seekRollRelative(-2)" title="Mundur 2 detik" style="padding: 0.25rem 0.45rem; font-size: 0.72rem;">-2s</button>
+                  <button class="btn btn-sm btn-outline" onclick="seekRollRelative(2)" title="Maju 2 detik" style="padding: 0.25rem 0.45rem; font-size: 0.72rem;">+2s</button>
+                  <button class="btn btn-sm btn-outline" onclick="resetRollView()" title="Kembali ke waktu live" style="padding: 0.25rem 0.45rem; font-size: 0.72rem;">Live</button>
+                </div>
+
+                <!-- Zoom & Target info -->
+                <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: auto;">
+                  <span class="badge badge-green" id="hitIndicator" style="display:none; padding: 1px 6px; font-size: 0.68rem;">NADA PAS!</span>
+                  <span class="text-xs text-muted font-bold">ZOOM:</span>
+                  <button class="btn btn-xs btn-outline active" id="btnZoomFocus" onclick="setRollRange('focus')" style="padding: 2px 5px; font-size: 0.7rem;">C3-C5</button>
+                  <button class="btn btn-xs btn-outline" id="btnZoomFull" onclick="setRollRange('full')" style="padding: 2px 5px; font-size: 0.7rem;">C2-C6</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Target status indicator -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; font-size: 0.72rem; color: var(--text2);">
+              <div>
+                <span>Target:</span> <strong id="activeTargetLabel" style="color: var(--text);">Tangga Nada Adaptif</strong>
+              </div>
+              <div style="font-size: 0.7rem; color: var(--text3);">
+                Tip: Klik titik mana saja pada papan piano untuk memutar lagu di detik tersebut
+              </div>
+            </div>
+
+            <div style="position: relative;">
+              <canvas id="pitchRollCanvas" style="cursor: pointer;"></canvas>
+            </div>
+
+            <!-- Track Waveform Vokal Rekaman Pengguna -->
+            <div id="vocalWaveformCard" style="margin-top: 0.5rem; background: #262444; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 4px; overflow: hidden; position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.28rem 0.65rem; background: #1c1a32; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.68rem;">
+                <div style="display: flex; align-items: center; gap: 0.45rem; color: #cbd5e1; font-weight: 700; letter-spacing: 0.4px;">
+                  <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #a78bfa;"></span>
+                  <span>WAVEFORM VOKAL REKAMAN</span>
+                </div>
+                <div id="waveformStatusText" style="font-family: var(--font-mono); font-size: 0.65rem; color: #94a3b8;">
+                  Belum ada rekaman
+                </div>
+              </div>
+              <div style="position: relative; height: 72px; width: 100%; background: #363360;">
+                <canvas id="vocalWaveformCanvas" style="width: 100%; height: 72px; display: block; cursor: pointer;" title="Klik untuk memutar rekaman vokal"></canvas>
+              </div>
+            </div>
+
+            <!-- Hidden Audio Engine Element for Recording Playback Sync -->
+            <audio id="audioPlayback" style="display: none;"></audio>
+            <div id="playbackBar" style="display: none;"></div>
+          </div>
+        </div>
+        <!-- Right: Telemetry & Live Analysis Metrics -->
+        <div>
+          <!-- Detected Note -->
+          <div class="card mb-2" style="padding: 0;">
+            <div class="note-display-box">
+              <div class="text-xs text-muted" style="letter-spacing: 1px; font-weight: 700;">NADA TERDETEKSI</div>
+              <div class="note-display-val" id="liveNoteVal">—</div>
+              <div class="note-cents-val" id="liveCentsVal">± 0 sen</div>
+              <div class="note-freq-val" id="liveFreqVal">— Hz</div>
+            </div>
+            <div style="padding: 0.75rem 1rem;">
+              <div class="d-flex justify-between text-xs mb-1">
+                <span class="text-muted">STATUS KETEPATAN</span>
+                <span id="tuningStatusText" style="font-weight: 700;">MENUNGGU SUARA...</span>
+              </div>
+            </div>
+          </div>
+          <!-- Session Acoustics -->
+          <div class="card mb-2">
+            <div class="card-title mb-2">RINGKASAN SESI</div>
+            <table class="table-metrics">
+              <tbody>
+                <tr><td>Nada Rata-rata</td><td id="telemetryMedian">—</td></tr>
+                <tr><td>Nada Terendah</td><td id="telemetryLow">—</td></tr>
+                <tr><td>Nada Tertinggi</td><td id="telemetryHigh">—</td></tr>
+                <tr><td>Waktu Bersuara</td><td id="telemetryVoiced">0%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Resonance Energy Distribution -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <div class="card-title" style="margin: 0;">FOKUS KARAKTER SUARA</div>
+              <span id="liveFocusBadge" class="badge badge-purple" style="font-size: 0.65rem; padding: 2px 7px;">STANDBY</span>
+            </div>
+            
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+                <strong id="liveFocusTitle" style="font-size: 0.95rem; color: var(--text);">Menunggu Suara...</strong>
+                <span id="liveFocusScore" style="font-family: var(--font-mono); font-weight: 700; color: var(--accent); font-size: 0.85rem;">0% stabil</span>
+              </div>
+              <div style="font-size: 0.7rem; color: var(--text3); margin-bottom: 0.4rem;">
+                Progres resonansi aktif:
+              </div>
+              <div style="height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; display: flex;">
+                <div id="progBarChest" style="height: 100%; width: 0%; background: #3b82f6; transition: width 0.15s ease;"></div>
+                <div id="progBarMask" style="height: 100%; width: 0%; background: #10b981; transition: width 0.15s ease;"></div>
+                <div id="progBarHead" style="height: 100%; width: 0%; background: #a855f7; transition: width 0.15s ease;"></div>
+              </div>
+            </div>
+
+            <div class="resonance-bar">
+              <span class="resonance-label" style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 1px; background: #3b82f6; display: inline-block;"></span>
+                Suara Dada
+              </span>
+              <div class="resonance-track"><div class="resonance-fill chest" id="barChest" style="width: 0%;"></div></div>
+              <span class="resonance-val" id="valChest">0%</span>
+            </div>
+            <div class="resonance-bar">
+              <span class="resonance-label" style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 1px; background: #10b981; display: inline-block;"></span>
+                Suara Campuran
+              </span>
+              <div class="resonance-track"><div class="resonance-fill mask" id="barMask" style="width: 0%;"></div></div>
+              <span class="resonance-val" id="valMask">0%</span>
+            </div>
+            <div class="resonance-bar">
+              <span class="resonance-label" style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 1px; background: #a855f7; display: inline-block;"></span>
+                Suara Kepala
+              </span>
+              <div class="resonance-track"><div class="resonance-fill head" id="barHead" style="width: 0%;"></div></div>
+              <span class="resonance-val" id="valHead">0%</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /studio-layout -->
+    </div><!-- /studioMain -->
+    <!-- ─── Report Section (FR-012 & FR-015) ─── -->
+    <div id="reportSection" class="hidden">
+      <!-- Print header -->
+      <div class="print-header">
+        <h1 style="font-size: 16pt; font-weight: 800; text-transform: uppercase;">VocalSense — Evaluasi Bernyanyi</h1>
+        <p style="font-size: 9pt; color: #444;" id="printMetaText">Dihasilkan oleh Analisis Akustik Vokal</p>
+      </div>
+
+      <!-- Report Action Header -->
+      <div class="d-flex justify-between align-center flex-wrap gap-1 mb-3" style="border-bottom: 1px solid var(--border); padding-bottom: 1.25rem;">
+        <div>
+          <span class="badge badge-green mb-1" style="font-size: 0.72rem;">ANALISIS SELESAI</span>
+          <h2 style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.3px; margin: 0.25rem 0;">Ringkasan Hasil Latihan</h2>
+          <p class="text-sm text-muted">Evaluasi objektif ketepatan nada dan karakter vokal Anda.</p>
+        </div>
+        <div class="d-flex gap-1" style="flex-wrap: wrap;">
+          <button class="btn btn-outline" onclick="window.print()">Cetak / Simpan PDF</button>
+          <button class="btn btn-primary" onclick="resetStudio()">Mulai Sesi Baru</button>
+        </div>
+      </div>
+
+      <!-- Hero Summary Banner -->
+      <div class="card mb-3" style="background: var(--bg2); border: 1px solid var(--border); padding: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 76px; height: 76px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
+              <span id="finalScoreVal" style="font-size: 1.9rem; font-weight: 800; line-height: 1; font-family: var(--font-mono); color: var(--accent);">0</span>
+              <span style="font-size: 0.6rem; color: var(--text3); font-weight: 700; letter-spacing: 0.5px;">/ 100</span>
+            </div>
+            <div>
+              <div id="finalScoreStatus" class="score-status text-green" style="font-size: 1rem; font-weight: 800; text-align: left;">SELESAI</div>
+              <p id="finalScoreDesc" class="text-xs text-muted mt-1" style="margin: 0; line-height: 1.4;">Hasil vokal Anda telah diproses dan dinilai oleh sistem.</p>
+            </div>
+          </div>
+          <!-- 3 Quick KPI Cards -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+            <div style="background: var(--bg); padding: 0.65rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+              <div class="text-xs text-muted font-bold" style="font-size: 0.65rem; letter-spacing: 0.3px;">AKURASI NADA</div>
+              <div id="kpiPitchAcc" style="font-size: 1.15rem; font-weight: 800; color: var(--green); font-family: var(--font-mono); margin-top: 0.2rem;">0%</div>
+            </div>
+            <div style="background: var(--bg); padding: 0.65rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+              <div class="text-xs text-muted font-bold" style="font-size: 0.65rem; letter-spacing: 0.3px;">KESTABILAN</div>
+              <div id="kpiStability" style="font-size: 1.15rem; font-weight: 800; color: var(--accent); font-family: var(--font-mono); margin-top: 0.2rem;">0%</div>
+            </div>
+            <div style="background: var(--bg); padding: 0.65rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+              <div class="text-xs text-muted font-bold" style="font-size: 0.65rem; letter-spacing: 0.3px;">DURASI</div>
+              <div id="kpiDuration" style="font-size: 1.15rem; font-weight: 800; color: var(--text); font-family: var(--font-mono); margin-top: 0.2rem;">0s</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Detail Grid -->
+      <div class="report-grid mb-3">
+        <!-- Radar Dimension -->
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(99, 102, 241, 0.2); background: #ffffff;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <div class="card-title" style="margin: 0; letter-spacing: 0.5px;">5 DIMENSI VOKAL</div>
+              <span class="badge" style="font-size: 0.65rem; background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25);">SKALA 0–100</span>
+            </div>
+            <p class="text-xs text-muted" style="margin: 0; line-height: 1.4;">Pemetaan keseimbangan kontrol pitch, napas, dan resonansi.</p>
+          </div>
+          
+          <div style="position: relative; width: 100%; max-width: 290px; margin: 0.75rem auto 0.25rem; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;">
+            <canvas id="radarCanvas" aria-label="Grafik lima dimensi vokal" role="img"></canvas>
+          </div>
+
+          <div style="margin-top: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.75rem;">
+            <div class="chart-legend" id="radarLegend" aria-live="polite" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.35rem 0.75rem; font-size: 0.72rem;"></div>
+          </div>
+        </div>
+        <!-- Full Metrics Table -->
+        <div class="card">
+          <div class="card-title mb-2">PARAMETER AKUSTIK</div>
+          <table class="table-metrics">
+            <tbody id="reportMetricsBody"></tbody>
+          </table>
+        </div>
+        <!-- Resonance & Vibrato Analysis -->
+        <div class="card">
+          <div class="card-title mb-2">RESONANSI &amp; VIBRATO</div>
+          <div class="text-xs text-muted mb-2">Distribusi rongga resonansi vokal:</div>
+          <div id="reportResonanceRows" class="mb-3"></div>
+          <div class="card-title mb-1" style="font-size: 0.75rem;">MODULASI VIBRATO</div>
+          <div id="reportVibratoText" class="text-xs" style="color: var(--text2); line-height: 1.5;"></div>
+        </div>
+        <!-- Registered Notes Chips -->
+        <div class="card">
+          <div class="card-title mb-2">SAMPEL NADA TERDETEKSI</div>
+          <p class="text-xs text-muted mb-2">Riwayat nada yang dinyanyikan selama sesi:</p>
+          <div class="chips-container" id="reportChips" style="max-height: 180px; overflow-y: auto;"></div>
+        </div>
+      </div>
+
+      <!-- Actionable Technical Recommendations -->
+      <div class="card mb-3">
+        <div class="card-title mb-2">REKOMENDASI LATIHAN</div>
+        <div id="reportRecommendations"></div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="d-flex gap-1 flex-wrap">
+        <button class="btn btn-outline" onclick="location.href='range-finder.html'">Uji Jangkauan Nada Vokal</button>
+        <button class="btn btn-outline" onclick="location.href='tuner.html'">Tuner Nada Otomatis</button>
+      </div>
+    </div><!-- /reportSection -->
+  </div><!-- /container -->
+</div><!-- /page -->
+<!-- Modal Dialog Import Lagu -->
+<div id="modalImportSong" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+  <div class="card" style="width: 100%; max-width: 490px; margin: 1rem; padding: 1.25rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+      <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Pilih Format Lagu</h3>
+      <button onclick="closeImportModal()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Opsi 1: Vokal & Instrumen Terpisah (User Input 2 File) -->
+    <div style="border: 1.5px solid #8b5cf6; border-radius: var(--radius-sm); padding: 0.75rem 0.9rem; margin-bottom: 0.6rem; background: rgba(139, 92, 246, 0.08); cursor: pointer;" onclick="openSeparateTracksModal()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+        <span style="font-weight: 700; font-size: 0.85rem; color: #a78bfa;">1. File Vokal & Instrumen Terpisah</span>
+        <span class="badge badge-purple" style="font-size: 0.65rem;">Rekomendasi</span>
+      </div>
+      <p class="text-xs text-muted" style="margin: 0;">
+        File vokal untuk posisi not, file instrumen untuk latar lagu.
+      </p>
+    </div>
+
+    <!-- Opsi 2: Satu File Audio Otomatis -->
+    <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 0.9rem; margin-bottom: 0.6rem; background: var(--bg); cursor: pointer;" onclick="document.getElementById('customAudioInput').click(); closeImportModal();">
+      <div style="font-weight: 700; font-size: 0.85rem; color: var(--text); margin-bottom: 0.2rem;">2. Satu File Audio (Deteksi Otomatis)</div>
+      <p class="text-xs text-muted" style="margin: 0;">
+        Ekstrak not vokal dan pengiring dari satu file lagu.
+      </p>
+    </div>
+
+    <!-- Opsi 3: Pisahkan Audio di Server -->
+    <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 0.9rem; margin-bottom: 0.6rem; background: var(--bg); cursor: pointer;" onclick="triggerBackendStemSeparation()">
+      <div style="font-weight: 700; font-size: 0.85rem; color: var(--text); margin-bottom: 0.2rem;">3. Pisahkan Audio via Server</div>
+      <p class="text-xs text-muted" style="margin: 0;">
+        Pemisahan stem vokal dan instrumen di backend.
+      </p>
+    </div>
+
+    <!-- Opsi 4: Musik Pengiring Saja -->
+    <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 0.9rem; margin-bottom: 0.85rem; background: var(--bg); cursor: pointer;" onclick="document.getElementById('backingAudioInput').click(); closeImportModal();">
+      <div style="font-weight: 700; font-size: 0.85rem; color: var(--text); margin-bottom: 0.2rem;">4. Musik Pengiring Saja</div>
+      <p class="text-xs text-muted" style="margin: 0;">
+        Putar audio sebagai latar tanpa notasi balok.
+      </p>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <button class="btn btn-sm btn-outline" onclick="closeImportModal()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Upload Vokal & Instrumen Terpisah -->
+<div id="modalSeparateTracks" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+  <div class="card" style="width: 100%; max-width: 480px; margin: 1rem; padding: 1.25rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+      <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Trek Vokal & Instrumen Terpisah</h3>
+      <button onclick="closeSeparateTracksModal()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+      <!-- Track Vokal -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; background: var(--bg);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <span style="font-weight: 700; font-size: 0.82rem; color: #a78bfa;">1. File Vokal</span>
+          <span class="text-xs text-muted" style="font-size: 0.68rem;">Khusus Catat Not Vokal</span>
+        </div>
+        <input type="file" id="sepVocalInput" accept="audio/*" class="form-control" style="font-size: 0.78rem; padding: 0.35rem 0.5rem;" onchange="updateSeparateFileInputLabels()">
+      </div>
+
+      <!-- Track Instrumen -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; background: var(--bg);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <span style="font-weight: 700; font-size: 0.82rem; color: #10b981;">2. File Instrumen</span>
+          <span class="text-xs text-muted" style="font-size: 0.68rem;">Musik Latar Lagu</span>
+        </div>
+        <input type="file" id="sepInstrumentInput" accept="audio/*" class="form-control" style="font-size: 0.78rem; padding: 0.35rem 0.5rem;" onchange="updateSeparateFileInputLabels()">
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+      <button class="btn btn-sm btn-outline" onclick="closeSeparateTracksModal()">Batal</button>
+      <button class="btn btn-sm btn-primary" id="btnSubmitSeparateTracks" onclick="submitSeparateTracks()">Terapkan Lagu</button>
+    </div>
+  </div>
+</div>
+<script src="../js/pitch.js"></script>
+<script type="module">
+  try {
+    const bpModule = await import('https://cdn.jsdelivr.net/npm/@spotify/basic-pitch@1.0.1/+esm');
+    window.SpotifyBasicPitch = bpModule.BasicPitch;
+    window.spotifyOutputToNotesPoly = bpModule.outputToNotesPoly;
+    window.spotifyNoteFramesToTime = bpModule.noteFramesToTime;
+  } catch (e) {
+    console.warn('Modul deteksi nada eksternal tidak aktif, menggunakan algoritma bawaan.');
+  }
+</script>
+<script>
+window.addEventListener('error', function(e) {
+  console.error('Studio Runtime:', e.message);
+});
+const user = JSON.parse(localStorage.getItem('vs_user') || 'null');
+const tier = user?.tier || 'free';
+const MAX_SEC = tier === 'premium' ? 900 : tier === 'pro' ? 300 : 60;
+document.getElementById('tierBadge').textContent = tier.toUpperCase();
+document.getElementById('recLimitText').textContent = `Maks: ${MAX_SEC >= 60 ? MAX_SEC/60 + ' menit' : MAX_SEC + ' detik'}`;
+const navAuth = document.getElementById('navAuth');
+navAuth.innerHTML = user
+  ? `<span class="badge">${tier.toUpperCase()}</span>
+     <span class="text-sm text-muted">${user.name}</span>
+     <a href="#" class="btn btn-outline btn-sm" onclick="localStorage.removeItem('vs_user'); location.reload();">Keluar</a>`
+  : `<a href="login.html" class="btn btn-outline btn-sm">Masuk</a><a href="register.html" class="btn btn-primary btn-sm">Daftar</a>`;
+// ÔöÇÔöÇÔöÇ Audio & Processing State ÔöÇÔöÇÔöÇ
+let audioCtx = null, analyser = null, fftAnalyser = null, source = null, stream = null;
+let animFrameId = null;
+let mediaRecorder = null, recordedChunks = [];
+let isRecording = false;
+let recordStartTime = 0, recordTimerInterval = null;
+let recordedTotalDuration = 0;
+let isPlaybackPlaying = false;
+let playbackCurrentTime = 0;
+let playbackLastAudioTime = 0;
+let playbackLastSysTime = 0;
+let pitchHistory = [];     // [{ t, freq, note, octave, cents, midi }]
+let resonanceHistory = []; // [{ chest, mask, head }]
+let rmsHistory = [];       // [dB]
+
+// MIDI Note Blocks Array
+// Each block: { midi, note, octave, startT, endT, centsList: [] }
+let midiNoteBlocks = [];
+let activeMidiBlock = null;
+let sessionStartTime = Date.now();
+// ─── Mathematical Constants & Dynamic Range for Piano Roll ───
+let currentRollMode = 'focus'; // 'focus' (C3 to C5, 25 notes) or 'full' (C2 to C6, 49 notes)
+let PITCH_MIN_MIDI = 48; // C3 (~130.8 Hz)
+let PITCH_MAX_MIDI = 72; // C5 (~523.3 Hz)
+let TOTAL_NOTES = PITCH_MAX_MIDI - PITCH_MIN_MIDI + 1; // 25 notes
+const SHARP_MAP = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0];
+const WINDOW_SECS = 10;
+const KEY_COL_WIDTH = 62;
+let spectrumCanvas, pitchCanvas, specCtx, pitchCtx;
+let waveformCanvas, waveformCtx;
+let recordedWaveformData = null;
+let liveWaveformPeaks = [];
+let waveformHoverX = -1;
+
+// ─── Guided Melody Exercises (DAW Guide Note Blocks with Smule-style In-place Chords) ───
+const EXERCISE_PRESETS = {
+  scale: [
+    { midi: 60, note: 'C', octave: 4, solfege: 'Do', chord: 'C', startT: 1.0, endT: 2.2 },
+    { midi: 62, note: 'D', octave: 4, solfege: 'Re', chord: 'Dm', startT: 2.5, endT: 3.7 },
+    { midi: 64, note: 'E', octave: 4, solfege: 'Mi', chord: 'Em', startT: 4.0, endT: 5.2 },
+    { midi: 65, note: 'F', octave: 4, solfege: 'Fa', chord: 'F', startT: 5.5, endT: 6.7 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'Sol', chord: 'G', startT: 7.0, endT: 8.2 },
+    { midi: 69, note: 'A', octave: 4, solfege: 'La', chord: 'Am', startT: 8.5, endT: 9.7 },
+    { midi: 71, note: 'B', octave: 4, solfege: 'Ti', chord: 'Bdim', startT: 10.0, endT: 11.2 },
+    { midi: 72, note: 'C', octave: 5, solfege: "Do'", chord: 'C', startT: 11.5, endT: 13.0 }
+  ],
+  arpeggio: [
+    { midi: 60, note: 'C', octave: 4, solfege: 'Do', chord: 'C', startT: 1.0, endT: 2.1 },
+    { midi: 64, note: 'E', octave: 4, solfege: 'Mi', chord: 'C', startT: 2.4, endT: 3.5 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'Sol', chord: 'C', startT: 3.8, endT: 4.9 },
+    { midi: 72, note: 'C', octave: 5, solfege: "Do'", chord: 'C', startT: 5.2, endT: 6.6 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'Sol', chord: 'G', startT: 6.9, endT: 8.0 },
+    { midi: 64, note: 'E', octave: 4, solfege: 'Mi', chord: 'G', startT: 8.3, endT: 9.4 },
+    { midi: 60, note: 'C', octave: 4, solfege: 'Do', chord: 'C', startT: 9.7, endT: 11.2 }
+  ],
+  twinkle: [
+    { midi: 60, note: 'C', octave: 4, solfege: 'Twin-', chord: 'C', startT: 1.0, endT: 1.8 },
+    { midi: 60, note: 'C', octave: 4, solfege: 'kle', chord: 'C', startT: 2.0, endT: 2.8 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'Twin-', chord: 'G', startT: 3.0, endT: 3.8 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'kle', chord: 'G', startT: 4.0, endT: 4.8 },
+    { midi: 69, note: 'A', octave: 4, solfege: 'Lit-', chord: 'Am', startT: 5.0, endT: 5.8 },
+    { midi: 69, note: 'A', octave: 4, solfege: 'tle', chord: 'Am', startT: 6.0, endT: 6.8 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'Star', chord: 'C', startT: 7.0, endT: 8.6 }
+  ],
+  custom: [
+    { midi: 60, note: 'C', octave: 4, solfege: 'Intro', chord: 'C', startT: 1.0, endT: 3.0 },
+    { midi: 64, note: 'E', octave: 4, solfege: 'Bait', chord: 'Em', startT: 3.5, endT: 5.5 },
+    { midi: 67, note: 'G', octave: 4, solfege: 'Reff', chord: 'G', startT: 6.0, endT: 8.5 }
+  ],
+  free: []
+};
+let currentExercise = 'scale';
+let currentTransposeSemitones = 0;
+const INITIAL_LEAD_IN_SECS = 2.5; // Jeda 2.5 detik dari kanan agar penyanyi siap menyambut not
+let guideNotesList = [];
+let customSongAudioBuffer = null;
+let customSongAudioElement = null;
+let customSongFileName = '';
+let customSongChords = []; // [{ chord: 'C', startT: 0, endT: 4, notes: [60,64,67] }]
+
+// Helper estimasi chord sederhana dari kumpulan nada
+function estimateChordName(rootNoteName, isMinor = false) {
+  return `${rootNoteName}${isMinor ? 'm' : ''}`;
+}
+
+// Helper: Konversi AudioBuffer ke WAV Blob untuk pemutaran musik karaoke instrumen murni
+function audioBufferToWavBlob(buffer) {
+  const numOfChan = buffer.numberOfChannels;
+  const length = buffer.length * numOfChan * 2 + 44;
+  const out = new DataView(new ArrayBuffer(length));
+  const channels = [];
+  let sampleRate = buffer.sampleRate;
+  let offset = 0;
+  let pos = 0;
+
+  function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+  function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+  // RIFF identifier
+  setUint32(0x46464952); // "RIFF"
+  setUint32(length - 8); // file length - 8
+  setUint32(0x45564157); // "WAVE"
+
+  // fmt sub-chunk
+  setUint32(0x20746d66); // "fmt "
+  setUint32(16);          // SubChunk1Size (16 for PCM)
+  setUint16(1);           // AudioFormat (1 for PCM)
+  setUint16(numOfChan);
+  setUint32(sampleRate);
+  setUint32(sampleRate * 2 * numOfChan); // byte rate
+  setUint16(numOfChan * 2);              // block align
+  setUint16(16);                         // bits per sample
+
+  // data sub-chunk
+  setUint32(0x61746164); // "data"
+  setUint32(length - pos - 4);
+
+  for (let i = 0; i < buffer.numberOfChannels; i++) {
+    channels.push(buffer.getChannelData(i));
+  }
+
+  while (offset < buffer.length) {
+    for (let i = 0; i < numOfChan; i++) {
+      let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+      sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+      out.setInt16(pos, sample, true);
+      pos += 2;
+    }
+    offset++;
+  }
+  return new Blob([out.buffer], { type: 'audio/wav' });
+}
+
+// ─── Fitur Import Lagu Sendiri (Karaoke, Pitch Auto-Extractor & Chord Detection) ───
+function openImportModal() {
+  const modal = document.getElementById('modalImportSong');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeImportModal() {
+  const modal = document.getElementById('modalImportSong');
+  if (modal) modal.classList.add('hidden');
+}
+
+function openSeparateTracksModal() {
+  closeImportModal();
+  const modal = document.getElementById('modalSeparateTracks');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeSeparateTracksModal() {
+  const modal = document.getElementById('modalSeparateTracks');
+  if (modal) modal.classList.add('hidden');
+}
+
+function updateSeparateFileInputLabels() {
+  const vInput = document.getElementById('sepVocalInput');
+  const iInput = document.getElementById('sepInstrumentInput');
+  const btn = document.getElementById('btnSubmitSeparateTracks');
+  const hasFile = (vInput && vInput.files && vInput.files[0]) || (iInput && iInput.files && iInput.files[0]);
+  if (btn) btn.disabled = !hasFile;
+}
+
+async function submitSeparateTracks() {
+  const vInput = document.getElementById('sepVocalInput');
+  const iInput = document.getElementById('sepInstrumentInput');
+  const vocalFile = vInput && vInput.files && vInput.files[0];
+  const instFile = iInput && iInput.files && iInput.files[0];
+
+  if (!vocalFile && !instFile) {
+    alert('Pilih file vokal atau file instrumen.');
+    return;
+  }
+
+  closeSeparateTracksModal();
+
+  const progressBadge = document.getElementById('importProgressBadge');
+  const progressText = document.getElementById('importProgressText');
+  if (progressBadge) progressBadge.classList.remove('hidden');
+  if (progressText) progressText.textContent = 'Menerapkan trek vokal & instrumen...';
+
+  let songDuration = 60;
+
+  // 1. File Instrumen: Menjadi audio pengiring (latar lagu)
+  if (instFile) {
+    if (!customSongAudioElement) customSongAudioElement = new Audio();
+    const instUrl = URL.createObjectURL(instFile);
+    customSongAudioElement.src = instUrl;
+    customSongAudioElement.load();
+    customSongFileName = instFile.name;
+    const label = document.getElementById('customSongLabel');
+    if (label) {
+      label.textContent = instFile.name;
+      label.style.display = 'inline-block';
+      label.title = instFile.name;
+    }
+  }
+
+  // 2. File Vokal: Hanya mencatat posisi not vokal di piano roll (TIDAK menjadi audio latar)
+  if (vocalFile) {
+    if (progressText) progressText.textContent = 'Mencatat notasi vokal...';
+    try {
+      const arrayBuffer = await vocalFile.arrayBuffer();
+      const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const vocalBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
+      songDuration = vocalBuffer.duration;
+
+      const { extractedNotes, extractedChords } = await extractNotesFromVocalBuffer(vocalBuffer, progressText);
+      customSongChords = extractedChords;
+      EXERCISE_PRESETS.custom = extractedNotes;
+
+      const exSelect = document.getElementById('exerciseSelect');
+      if (exSelect) exSelect.value = 'custom';
+      currentExercise = 'custom';
+      guideNotesList = buildTransposedGuideList();
+
+      if (extractedNotes.length > 0) {
+        const allMidis = extractedNotes.map(n => n.midi);
+        const minSongMidi = Math.min(...allMidis);
+        const maxSongMidi = Math.max(...allMidis);
+        if (minSongMidi < 48 || maxSongMidi > 72) {
+          setRollRange('full');
+        }
+        userScrollTimeOffset = 0;
+      }
+    } catch (err) {
+      console.error('Gagal mencatat not vokal:', err);
+    }
+  } else if (instFile) {
+    // Mode instrumen latar tanpa notasi
+    const exSelect = document.getElementById('exerciseSelect');
+    if (exSelect) exSelect.value = 'custom';
+    currentExercise = 'custom';
+    EXERCISE_PRESETS.custom = [];
+    guideNotesList = [];
+  }
+
+  // Durasi batas rekam
+  const refDur = (instFile && customSongAudioElement && isFinite(customSongAudioElement.duration) && customSongAudioElement.duration > 0)
+    ? customSongAudioElement.duration
+    : songDuration;
+  const maxSongSecs = Math.min(300, Math.ceil(refDur || 60));
+  const limitEl = document.getElementById('recLimitText');
+  if (limitEl) {
+    const dispName = instFile ? instFile.name : vocalFile.name;
+    limitEl.textContent = `Batas ${maxSongSecs}s: ${dispName}`;
+  }
+
+  if (progressBadge) progressBadge.classList.add('hidden');
+}
+
+function triggerBackendStemSeparation() {
+  closeImportModal();
+  // Buka file dialog untuk mengunggah lagu ke backend separation
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'audio/*';
+  fileInput.onchange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    await processBackendSeparation(file);
+  };
+  fileInput.click();
+}
+
+async function processBackendSeparation(file) {
+  const progressBadge = document.getElementById('importProgressBadge');
+  const progressText = document.getElementById('importProgressText');
+  const label = document.getElementById('customSongLabel');
+  label.textContent = `[Backend AI] ${file.name}`;
+  label.style.display = 'inline-block';
+  if (progressBadge) progressBadge.classList.remove('hidden');
+  if (progressText) progressText.textContent = 'Mengunggah & Memisahkan Vokal di Backend...';
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const BACKEND_URL = window.location.port === '8001' ? '' : 'http://localhost:8001';
+    const resp = await fetch(`${BACKEND_URL}/api/audio/separate-stems`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!resp.ok) {
+      throw new Error(`Server backend merespons kode: ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    console.log('Hasil pemisahan stem dari backend:', data);
+
+    if (progressText) progressText.textContent = 'Mengunduh Stem Vokal & Ekstraksi Notasi...';
+
+    // Ambil file audio vokal hasil pemisahan
+    const vocalResp = await fetch(`${BACKEND_URL}${data.vocals_url}`);
+    const vocalBlob = await vocalResp.blob();
+    const vocalFile = new File([vocalBlob], `vocal_${file.name}.wav`, { type: 'audio/wav' });
+
+    // Siapkan audio player karaoke menggunakan accompaniment (minus-one)
+    if (!customSongAudioElement) customSongAudioElement = new Audio();
+    customSongAudioElement.src = `${BACKEND_URL}${data.accompaniment_url}`;
+    customSongAudioElement.load();
+
+    // Jalankan ekstraksi balok nada pada vokal bersih
+    const fakeEvent = { target: { files: [vocalFile] } };
+    await handleCustomSongUpload(fakeEvent, true);
+
+  } catch (err) {
+    console.warn('Gagal memproses via backend service, menggunakan DSP lokal browser:', err);
+    if (progressText) progressText.textContent = 'Backend offline, memproses lokal di browser...';
+    // Fallback otomatis ke pemrosesan browser lokal
+    const fakeEvent = { target: { files: [file] } };
+    await handleCustomSongUpload(fakeEvent);
+  }
+}
+// ─── Ekstraksi Posisi Notasi Vokal dari Audio Buffer Vokal ───
+async function extractNotesFromVocalBuffer(isolatedVocalBuffer, progressText = null) {
+  let extractedNotes = [];
+  let extractedChords = [];
+
+  // METODE 1: AI Model Spotify Basic Pitch (Jika tersedia via CDN)
+  if (window.SpotifyBasicPitch && window.spotifyOutputToNotesPoly && window.spotifyNoteFramesToTime) {
+    try {
+      if (progressText) progressText.textContent = 'Menjalankan AI Isolasi Vokal...';
+      const TARGET_SR = 22050;
+      const maxDur = Math.min(isolatedVocalBuffer.duration, 90);
+      const totalSamples = Math.floor(TARGET_SR * maxDur);
+
+      const offlineCtx = new OfflineAudioContext(1, totalSamples, TARGET_SR);
+      const src = offlineCtx.createBufferSource();
+      src.buffer = isolatedVocalBuffer;
+      src.connect(offlineCtx.destination);
+      src.start(0);
+      const resampled = await offlineCtx.startRendering();
+      let monoData = resampled.getChannelData(0);
+
+      const filterCtx = new OfflineAudioContext(1, totalSamples, TARGET_SR);
+      const monoBuf = filterCtx.createBuffer(1, totalSamples, TARGET_SR);
+      monoBuf.getChannelData(0).set(monoData);
+      const mSrc = filterCtx.createBufferSource();
+      mSrc.buffer = monoBuf;
+
+      const vHp = filterCtx.createBiquadFilter();
+      vHp.type = 'highpass';
+      vHp.frequency.value = 180;
+      const vLp = filterCtx.createBiquadFilter();
+      vLp.type = 'lowpass';
+      vLp.frequency.value = 2200;
+      const vPeak = filterCtx.createBiquadFilter();
+      vPeak.type = 'peaking';
+      vPeak.frequency.value = 1000;
+      vPeak.gain.value = 4.0;
+
+      mSrc.connect(vHp);
+      vHp.connect(vLp);
+      vLp.connect(vPeak);
+      vPeak.connect(filterCtx.destination);
+      mSrc.start(0);
+
+      const filtered = await filterCtx.startRendering();
+      monoData = filtered.getChannelData(0);
+
+      const basicPitch = new window.SpotifyBasicPitch('https://cdn.jsdelivr.net/npm/@spotify/basic-pitch@1.0.1/model/model.json');
+
+      let frames = [], onsets = [], contours = [];
+      await basicPitch.evaluateModel(
+        monoData,
+        (f, o, c) => {
+          frames = f;
+          onsets = o;
+          contours = c;
+        },
+        pct => {
+          if (progressText) progressText.textContent = `AI Menganalisis Vokal: ${Math.round(pct * 100)}%`;
+        }
+      );
+
+      const noteEvents = window.spotifyOutputToNotesPoly(
+        frames,
+        onsets,
+        0.68,
+        0.70,
+        16
+      );
+      const timedNotes = window.spotifyNoteFramesToTime(noteEvents);
+
+      const rawNotes = timedNotes
+        .filter(n => n.pitchMidi >= 48 && n.pitchMidi <= 79 && n.durationSeconds >= 0.25)
+        .map(n => {
+          const m = n.pitchMidi;
+          const noteName = PitchUtils.NOTE_NAMES[((m % 12) + 12) % 12];
+          const oct = Math.floor(m / 12) - 1;
+          return {
+            midi: m,
+            note: noteName,
+            octave: oct,
+            solfege: `${noteName}${oct}`,
+            startT: +n.startTimeSeconds.toFixed(2),
+            endT: +(n.startTimeSeconds + n.durationSeconds).toFixed(2),
+            amplitude: n.amplitude || 1
+          };
+        })
+        .sort((a, b) => a.startT - b.startT);
+
+      let monoLine = [];
+      for (let i = 0; i < rawNotes.length; i++) {
+        const curr = rawNotes[i];
+        if (monoLine.length === 0) {
+          monoLine.push(curr);
+          continue;
+        }
+        const prev = monoLine[monoLine.length - 1];
+
+        if (curr.startT < prev.endT) {
+          const currDur = curr.endT - curr.startT;
+          const prevDur = prev.endT - prev.startT;
+          if (currDur > prevDur * 1.3) {
+            monoLine[monoLine.length - 1] = curr;
+          }
+          continue;
+        }
+
+        if (curr.midi === prev.midi && (curr.startT - prev.endT) < 0.25) {
+          prev.endT = Math.max(prev.endT, curr.endT);
+        } else {
+          monoLine.push(curr);
+        }
+      }
+      extractedNotes = monoLine;
+      console.log(`AI Spotify Basic Pitch mengekstrak ${extractedNotes.length} notasi vokal.`);
+    } catch (aiErr) {
+      console.warn('AI Basic Pitch error, beralih ke DSP:', aiErr);
+    }
+  }
+
+  // METODE 2: Fallback DSP Vocal Isolation + NSDF
+  if (extractedNotes.length === 0) {
+    if (progressText) progressText.textContent = 'Memproses Isolasi Vokal DSP...';
+    const sampleRate = isolatedVocalBuffer.sampleRate;
+    const totalLen = Math.min(isolatedVocalBuffer.length, sampleRate * 120);
+
+    const offlineCtx = new OfflineAudioContext(1, totalLen, sampleRate);
+    const sourceNode = offlineCtx.createBufferSource();
+    sourceNode.buffer = isolatedVocalBuffer;
+
+    const hp = offlineCtx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 80; hp.Q.value = 0.707;
+    const lp = offlineCtx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 5000; lp.Q.value = 0.707;
+    const boost = offlineCtx.createBiquadFilter();
+    boost.type = 'peaking'; boost.frequency.value = 1000; boost.gain.value = 2.0; boost.Q.value = 1.0;
+
+    sourceNode.connect(hp);
+    hp.connect(lp);
+    lp.connect(boost);
+    boost.connect(offlineCtx.destination);
+    sourceNode.start(0);
+
+    const rendered = await offlineCtx.startRendering();
+    const vocalData = rendered.getChannelData(0);
+
+    const stepSecs = 0.08;
+    const stepSamples = Math.floor(sampleRate * stepSecs);
+    const frameSize = 2048;
+    let accum = [];
+
+    for (let offset = 0; offset + frameSize < totalLen; offset += stepSamples) {
+      const frame = vocalData.subarray(offset, offset + frameSize);
+      const rms = PitchUtils.computeRMS(frame);
+      const timeSec = offset / sampleRate;
+
+      if (rms > -48) {
+        const freq = PitchUtils.detectPitch(frame, sampleRate);
+        if (freq >= 85 && freq <= 1050) {
+          const info = PitchUtils.freqToNote(freq);
+          if (info) {
+            if (accum.length === 0) {
+              accum.push({ t: timeSec, midi: info.midiNote, note: info.note, oct: info.octave });
+            } else if (Math.abs(info.midiNote - accum[0].midi) <= 1) {
+              accum.push({ t: timeSec, midi: info.midiNote, note: info.note, oct: info.octave });
+            } else {
+              if (accum.length >= 2) {
+                const m = accum[Math.floor(accum.length / 2)].midi;
+                const nn = PitchUtils.NOTE_NAMES[((m % 12) + 12) % 12];
+                const o = Math.floor(m / 12) - 1;
+                extractedNotes.push({
+                  midi: m, note: nn, octave: o, solfege: `${nn}${o}`,
+                  startT: +accum[0].t.toFixed(2),
+                  endT: +(accum[accum.length - 1].t + stepSecs).toFixed(2)
+                });
+              }
+              accum = [{ t: timeSec, midi: info.midiNote, note: info.note, oct: info.octave }];
+            }
+          }
+        }
+      }
+    }
+    if (accum.length >= 2) {
+      const m = accum[Math.floor(accum.length / 2)].midi;
+      const nn = PitchUtils.NOTE_NAMES[((m % 12) + 12) % 12];
+      const o = Math.floor(m / 12) - 1;
+      extractedNotes.push({
+        midi: m, note: nn, octave: o, solfege: `${nn}${o}`,
+        startT: +accum[0].t.toFixed(2),
+        endT: +(accum[accum.length - 1].t + stepSecs).toFixed(2)
+      });
+    }
+  }
+
+  // Deteksi Akor Harmoni per Bar (2.5 Detik)
+  const totalSongSecs = Math.min(isolatedVocalBuffer.duration, 120);
+  const CHORD_BAR_SECS = 2.5;
+  for (let t = 0; t < totalSongSecs; t += CHORD_BAR_SECS) {
+    const notesInBar = extractedNotes.filter(n => n.startT >= t && n.startT < (t + CHORD_BAR_SECS));
+    if (notesInBar.length > 0) {
+      const noteCounts = {};
+      notesInBar.forEach(n => {
+        const root = n.midi % 12;
+        noteCounts[root] = (noteCounts[root] || 0) + 1;
+      });
+      const sorted = Object.keys(noteCounts).map(Number).sort((a, b) => noteCounts[b] - noteCounts[a]);
+      const dominantRoot = sorted[0];
+      const rootName = PitchUtils.NOTE_NAMES[dominantRoot];
+      const hasMinorThird = sorted.includes((dominantRoot + 3) % 12);
+      const chordName = hasMinorThird ? `${rootName}m` : `${rootName}`;
+      extractedChords.push({
+        chord: chordName,
+        startT: t,
+        endT: t + CHORD_BAR_SECS,
+        rootMidi: 48 + dominantRoot
+      });
+    }
+  }
+
+  // Fallback cadangan jika lagu sangat sepi
+  if (extractedNotes.length === 0) {
+    const stepDur = 2.0;
+    for (let s = 1.0; s < Math.min(60, isolatedVocalBuffer.duration); s += stepDur) {
+      const chordMatch = extractedChords.find(c => s >= c.startT && s < c.endT) || { chord: 'C', rootMidi: 60 };
+      const rootMidi = chordMatch.rootMidi || 60;
+      const noteName = PitchUtils.NOTE_NAMES[((rootMidi % 12) + 12) % 12];
+      const oct = Math.floor(rootMidi / 12) - 1;
+      extractedNotes.push({
+        midi: rootMidi,
+        note: noteName,
+        octave: oct,
+        solfege: `${noteName}${oct}`,
+        chord: chordMatch.chord,
+        startT: +s.toFixed(2),
+        endT: +(s + 1.6).toFixed(2)
+      });
+    }
+  }
+
+  if (extractedChords.length === 0) {
+    extractedChords.push(
+      { chord: 'C', startT: 0, endT: 3.5, rootMidi: 60 },
+      { chord: 'Am', startT: 3.5, endT: 7.0, rootMidi: 57 },
+      { chord: 'F', startT: 7.0, endT: 10.5, rootMidi: 53 },
+      { chord: 'G', startT: 10.5, endT: 14.0, rootMidi: 55 }
+    );
+  }
+
+  return { extractedNotes, extractedChords };
+}
+
+// Opsi 4: pasang lagu sebagai audio pengiring saja tanpa analisis not
+function handleBackingTrackUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const label = document.getElementById('customSongLabel');
+  label.textContent = file.name;
+  label.style.display = 'inline-block';
+  label.title = file.name;
+  if (!customSongAudioElement) customSongAudioElement = new Audio();
+  customSongAudioElement.src = URL.createObjectURL(file);
+  customSongAudioElement.load();
+  const badge = document.getElementById('importProgressBadge');
+  if (badge) badge.classList.add('hidden');
+}
+
+async function handleCustomSongUpload(event, isAlreadyCleanVocal = false) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  customSongFileName = file.name;
+  const label = document.getElementById('customSongLabel');
+  label.textContent = file.name;
+  label.style.display = 'inline-block';
+  label.title = file.name;
+
+  // Siapkan pemutar audio karaoke bawaan browser jika belum disiapkan oleh backend accompaniment
+  if (!customSongAudioElement || !customSongAudioElement.src || !isAlreadyCleanVocal) {
+    if (!customSongAudioElement) customSongAudioElement = new Audio();
+    const fileUrl = URL.createObjectURL(file);
+    customSongAudioElement.src = fileUrl;
+  }
+
+  // Analisis nada melodi vokal & akor dari file lagu menggunakan Spotify Basic Pitch AI / Hybrid Offline Context
+  const progressBadge = document.getElementById('importProgressBadge');
+  const progressText = document.getElementById('importProgressText');
+  if (progressBadge) progressBadge.classList.remove('hidden');
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const decodeCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await decodeCtx.decodeAudioData(arrayBuffer);
+    customSongAudioBuffer = audioBuffer;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PISAHKAN AUDIO: INSTRUMEN KARAOKE vs VOKAL UNTUK DETEKSI NADA
+    // Jika belum dibersihkan oleh backend AI, lakukan DSP Mid/Side stereo subtraction
+    // ─────────────────────────────────────────────────────────────────────────
+    let isolatedVocalBuffer = audioBuffer;
+    if (!isAlreadyCleanVocal && audioBuffer.numberOfChannels >= 2) {
+      if (progressText) progressText.textContent = 'Memisahkan vokal dan musik pengiring...';
+      const chL = audioBuffer.getChannelData(0);
+      const chR = audioBuffer.getChannelData(1);
+      const len = audioBuffer.length;
+      const sr = audioBuffer.sampleRate;
+
+      // 1. BACKING TRACK KARAOKE (Vocal-Removed):
+      // Mengurangi L dan R (L - R) untuk membatalkan suara vokal tengah secara total
+      const backingBuffer = decodeCtx.createBuffer(2, len, sr);
+      const backL = backingBuffer.getChannelData(0);
+      const backR = backingBuffer.getChannelData(1);
+
+      // 2. ISOLASI VOKAL UNTUK DETEKSI NOT:
+      // Kurangkan sinyal samping dari sinyal tengah agar not instrumen di intro/outro/jeda vokal bersih
+      const vocalOnlyBuffer = decodeCtx.createBuffer(1, len, sr);
+      const vocData = vocalOnlyBuffer.getChannelData(0);
+
+      for (let i = 0; i < len; i++) {
+        const left = chL[i];
+        const right = chR[i];
+        const mid = (left + right) * 0.5;
+        const diff = (left - right) * 0.5;
+        backL[i] = diff;
+        backR[i] = -diff;
+
+        // Vokal murni: kurangi energi instrumen panned
+        // Center channel is vocal candidate; side channel is accompaniment candidate.
+        // Do not subtract rectified side energy: it creates pitch-shifting distortion.
+        vocData[i] = mid;
+      }
+      isolatedVocalBuffer = vocalOnlyBuffer;
+
+      // Pasang audio pengiring instrumen murni ke pemutar musik studio
+      try {
+        const backingWav = audioBufferToWavBlob(backingBuffer);
+        const backingUrl = URL.createObjectURL(backingWav);
+        customSongAudioElement.src = backingUrl;
+        console.log('Audio karaoke instrumen murni berhasil dibuat dan dipasang!');
+      } catch (wavErr) {
+        console.warn('Fallback ke audio asli untuk pemutar musik:', wavErr);
+      }
+    }
+
+    const { extractedNotes, extractedChords } = await extractNotesFromVocalBuffer(isolatedVocalBuffer, progressText);
+    customSongChords = extractedChords;
+    EXERCISE_PRESETS.custom = extractedNotes;
+    
+    // Aktifkan pilihan latihan 'custom' di dropdown dan refresh balok panduan
+    const exSelect = document.getElementById('exerciseSelect');
+    if (exSelect) exSelect.value = 'custom';
+    currentExercise = 'custom';
+    guideNotesList = buildTransposedGuideList();
+
+    // Auto-Scale Piano Roll Range to Fit the Song's Extracted Notes
+    if (extractedNotes.length > 0) {
+      const allMidis = extractedNotes.map(n => n.midi);
+      const minSongMidi = Math.min(...allMidis);
+      const maxSongMidi = Math.max(...allMidis);
+      if (minSongMidi < 48 || maxSongMidi > 72) {
+        setRollRange('full'); // Beralih ke C2-C6 jika lagu memiliki jangkauan nada lebar
+      }
+      userScrollTimeOffset = 0; // Mulai dari posisi awal agar balok pertama langsung berada di hadapan kursor
+    }
+
+    // Sesuaikan durasi rekaman jika lagu lebih panjang
+    const maxSongSecs = Math.min(300, Math.ceil(audioBuffer.duration));
+    document.getElementById('recLimitText').textContent = `Maksimal ${maxSongSecs} detik: ${file.name}`;
+    if (progressBadge) progressBadge.classList.add('hidden');
+    console.log(`Lagu berhasil diimpor: ${extractedNotes.length} balok nada siap ditampilkan.`);
+  } catch (err) {
+    console.error('Gagal mengekstrak nada dan chord lagu:', err);
+    if (progressBadge) progressBadge.classList.add('hidden');
+    EXERCISE_PRESETS.custom = EXERCISE_PRESETS.scale;
+    customSongChords = [
+      { chord: 'C', startT: 0, endT: 4.0, rootMidi: 60 },
+      { chord: 'G', startT: 4.0, endT: 8.0, rootMidi: 55 },
+      { chord: 'Am', startT: 8.0, endT: 12.0, rootMidi: 57 }
+    ];
+    document.getElementById('exerciseSelect').value = 'custom';
+    changeExercisePreset();
+  }
+}
+
+function buildTransposedGuideList() {
+  const base = EXERCISE_PRESETS[currentExercise] || [];
+  return base.map(item => {
+    const newMidi = item.midi + currentTransposeSemitones;
+    const noteName = PitchUtils.NOTE_NAMES[((newMidi % 12) + 12) % 12];
+    const octave = Math.floor(newMidi / 12) - 1;
+    // Cari akor yang cocok dengan segmen waktu balok nada ini (Smule-style per block chord)
+    let chordLabel = item.chord || '';
+    if (!chordLabel && customSongChords.length > 0) {
+      const match = customSongChords.find(c => item.startT >= c.startT && item.startT < c.endT);
+      if (match) chordLabel = match.chord;
+    }
+    // Untuk custom song (lagu import), kita berikan lead-in 2.5 detik agar balok awal terlihat di layar saat belum rekam
+    const leadIn = INITIAL_LEAD_IN_SECS;
+    return {
+      ...item,
+      midi: newMidi,
+      note: noteName,
+      octave: octave,
+      chord: chordLabel,
+      startT: item.startT + leadIn,
+      endT: item.endT + leadIn
+    };
+  });
+}
+
+function changeExercisePreset() {
+  currentExercise = document.getElementById('exerciseSelect').value;
+  guideNotesList = buildTransposedGuideList();
+}
+
+function changeKeyTranspose() {
+  currentTransposeSemitones = parseInt(document.getElementById('keyTransposeSelect').value, 10) || 0;
+  guideNotesList = buildTransposedGuideList();
+}
+
+// Inisialisasi daftar nada awal dengan jeda lead-in
+guideNotesList = buildTransposedGuideList();
+
+function setRollRange(mode) {
+  currentRollMode = mode;
+  const canvasEl = document.getElementById('pitchRollCanvas');
+  if (mode === 'focus') {
+    PITCH_MIN_MIDI = 48; // C3
+    PITCH_MAX_MIDI = 72; // C5
+    if (canvasEl) canvasEl.style.height = '440px';
+    document.getElementById('btnZoomFocus').classList.add('active');
+    document.getElementById('btnZoomFull').classList.remove('active');
+  } else {
+    PITCH_MIN_MIDI = 36; // C2
+    PITCH_MAX_MIDI = 84; // C6
+    // Saat zoom diperluas ke C2-C6 (49 nada), perbesar papan kanvas (bukan digepengkan!)
+    if (canvasEl) canvasEl.style.height = '780px';
+    document.getElementById('btnZoomFocus').classList.remove('active');
+    document.getElementById('btnZoomFull').classList.add('active');
+  }
+  TOTAL_NOTES = PITCH_MAX_MIDI - PITCH_MIN_MIDI + 1;
+  resizeCanvases();
+}
+
+// ─── Web Audio Oscillator: Piano Tone Synthesizer ───
+function playPianoTone(freq, dur = 0.8) {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + dur);
+}
+
+let isGuideAudioPlaying = false;
+let guideAudioTimeoutIds = [];
+function toggleGuideAudio() {
+  const btn = document.getElementById('btnGuideAudio');
+  if (isGuideAudioPlaying) {
+    isGuideAudioPlaying = false;
+    guideAudioTimeoutIds.forEach(id => clearTimeout(id));
+    guideAudioTimeoutIds = [];
+    if (customSongAudioElement) {
+      customSongAudioElement.pause();
+      customSongAudioElement.currentTime = 0;
+    }
+    btn.classList.remove('btn-primary');
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v8"/><path d="M12 5v8"/><path d="M17 5v8"/></svg>
+      <span>Putar Panduan Piano</span>
+    `;
+    return;
+  }
+  if (!guideNotesList.length) {
+    alert('Silakan pilih materi melodi pada menu latihan terlebih dahulu.');
+    return;
+  }
+  isGuideAudioPlaying = true;
+  btn.classList.add('btn-primary');
+  btn.innerHTML = `
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+    <span>Hentikan Nada Panduan</span>
+  `;
+
+  // Jika sedang mode lagu sendiri, putar audio lagu sebagai musik latar karaoke
+  if (currentExercise === 'custom' && customSongAudioElement) {
+    customSongAudioElement.currentTime = 0;
+    setTimeout(() => {
+      if (isGuideAudioPlaying) customSongAudioElement.play().catch(e => console.log('Autoplay blocked:', e));
+    }, INITIAL_LEAD_IN_SECS * 1000);
+  }
+
+  const startTime = Date.now();
+  guideNotesList.forEach(item => {
+    const freq = PitchUtils.midiToFreq(item.midi);
+    const delayMs = Math.max(0, item.startT * 1000);
+    const tid = setTimeout(() => {
+      if (!isGuideAudioPlaying) return;
+      playPianoTone(freq, Math.max(0.5, item.endT - item.startT));
+    }, delayMs);
+    guideAudioTimeoutIds.push(tid);
+  });
+  const maxEndT = Math.max(...guideNotesList.map(i => i.endT));
+  const finishTid = setTimeout(() => {
+    isGuideAudioPlaying = false;
+    if (customSongAudioElement) {
+      customSongAudioElement.pause();
+      customSongAudioElement.currentTime = 0;
+    }
+    btn.classList.remove('btn-primary');
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v8"/><path d="M12 5v8"/><path d="M17 5v8"/></svg>
+      <span>Putar Panduan Piano</span>
+    `;
+  }, (maxEndT + 0.5) * 1000);
+  guideAudioTimeoutIds.push(finishTid);
+}
+
+// ─── Simulation / Demo Vocal Mode ───
+let isDemoVocalActive = false;
+let demoIntervalId = null;
+let simulatedFreq = 0;
+let simulatedNoteInfo = null;
+
+function openStudioDirect() {
+  document.getElementById('permSection').classList.add('hidden');
+  document.getElementById('studioMain').classList.remove('hidden');
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  setupCanvases();
+  requestAnimationFrame(processAudioTick);
+}
+
+function toggleDemoVocal() {
+  const btn = document.getElementById('btnDemoMode');
+  isDemoVocalActive = !isDemoVocalActive;
+  if (isDemoVocalActive) {
+    btn.classList.add('btn-primary');
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+      <span>Hentikan Simulasi</span>
+    `;
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      setupCanvases();
+      document.getElementById('permSection').classList.add('hidden');
+      document.getElementById('studioMain').classList.remove('hidden');
+      requestAnimationFrame(processAudioTick);
+    }
+    const demoStartT = Date.now();
+    let currentNoteIdx = 0;
+    demoIntervalId = setInterval(() => {
+      const elapsed = (Date.now() - demoStartT) / 1000;
+      const targetMelody = guideNotesList.length ? guideNotesList : EXERCISE_PRESETS.scale;
+      const activeGuide = targetMelody.find(n => elapsed >= n.startT && elapsed <= n.endT);
+      if (activeGuide) {
+        // Natural vocal vibration: 5.5 Hz vibrato with small jitter
+        const vibrato = Math.sin(elapsed * 5.5 * Math.PI * 2) * 1.5;
+        const targetFreq = PitchUtils.midiToFreq(activeGuide.midi);
+        simulatedFreq = targetFreq + vibrato;
+        simulatedNoteInfo = PitchUtils.freqToNote(simulatedFreq);
+        playPianoTone(simulatedFreq, 0.15);
+      } else {
+        simulatedFreq = 0;
+        simulatedNoteInfo = null;
+      }
+      const maxT = Math.max(...targetMelody.map(n => n.endT));
+      if (elapsed > maxT + 1) {
+        toggleDemoVocal();
+      }
+    }, 80);
+  } else {
+    btn.classList.remove('btn-primary');
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Simulasi Vokal</span>
+    `;
+    clearInterval(demoIntervalId);
+    demoIntervalId = null;
+    simulatedFreq = 0;
+    simulatedNoteInfo = null;
+  }
+}
+// ÔöÇÔöÇÔöÇ Microphone Setup ÔöÇÔöÇÔöÇ
+async function initMic() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
+  } catch (err) {
+    alert('Akses mikrofon ditolak oleh browser. Pastikan izin mikrofon telah diberikan.');
+    return;
+  }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  fftAnalyser = audioCtx.createAnalyser();
+  fftAnalyser.fftSize = 2048;
+  source = audioCtx.createMediaStreamSource(stream);
+  source.connect(analyser);
+  source.connect(fftAnalyser);
+  document.getElementById('permSection').classList.add('hidden');
+  document.getElementById('studioMain').classList.remove('hidden');
+  setupCanvases();
+  requestAnimationFrame(processAudioTick);
+}
+function setupCanvases() {
+  spectrumCanvas = document.getElementById('spectrumCanvas');
+  pitchCanvas = document.getElementById('pitchRollCanvas');
+  waveformCanvas = document.getElementById('vocalWaveformCanvas');
+  resizeCanvases();
+  window.addEventListener('resize', resizeCanvases);
+
+  if (waveformCanvas) {
+    waveformCanvas.addEventListener('click', (e) => {
+      if (isRecording) return;
+      // Waveform murni vokal pengguna: hanya seek jika ada rekaman vokal
+      if (!recordedWaveformData || recordedTotalDuration <= 0) return;
+      const rect = waveformCanvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      if (recordedTotalDuration > 0 && rect.width > 0) {
+        const targetT = Math.max(0, Math.min(recordedTotalDuration, (clickX / rect.width) * recordedTotalDuration));
+        seekAndPlayAt(targetT);
+      }
+    });
+
+    waveformCanvas.addEventListener('mousemove', (e) => {
+      if (!recordedWaveformData || recordedTotalDuration <= 0 || isRecording) {
+        waveformHoverX = -1;
+        return;
+      }
+      const rect = waveformCanvas.getBoundingClientRect();
+      waveformHoverX = e.clientX - rect.left;
+    });
+
+    waveformCanvas.addEventListener('mouseleave', () => {
+      waveformHoverX = -1;
+    });
+  }
+
+  // Mouse wheel horizontal panning on piano roll
+  pitchCanvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+    seekRollRelative(delta > 0 ? 0.6 : -0.6);
+  }, { passive: false });
+
+  // Mouse drag panning & click-to-seek on piano roll
+  let mouseDownClientX = 0;
+  let mouseDownClientY = 0;
+
+  pitchCanvas.addEventListener('mousedown', (e) => {
+    isDraggingRoll = true;
+    mouseDownClientX = e.clientX;
+    mouseDownClientY = e.clientY;
+    dragStartX = e.clientX;
+    dragStartOffset = userScrollTimeOffset;
+    pitchCanvas.style.cursor = 'grabbing';
+  });
+
+  pitchCanvas.addEventListener('mousemove', (e) => {
+    const rect = pitchCanvas.getBoundingClientRect();
+    hoverCanvasX = e.clientX - rect.left;
+    hoverCanvasY = e.clientY - rect.top;
+    if (hoverCanvasX > KEY_COL_WIDTH) {
+      const gridW = rect.width - KEY_COL_WIDTH;
+      const pixelsPerSec = gridW / WINDOW_SECS;
+      const rawViewT = (isRollPaused ? pausedDisplayT : currentSessionT) + userScrollTimeOffset;
+      const viewT = Math.max(0, rawViewT);
+      const cursorX = KEY_COL_WIDTH + gridW * 0.32;
+      hoverTimeSec = Math.max(0, viewT + (hoverCanvasX - cursorX) / pixelsPerSec);
+    } else {
+      hoverTimeSec = -1;
+    }
+  });
+
+  pitchCanvas.addEventListener('mouseleave', () => {
+    hoverCanvasX = -1;
+    hoverCanvasY = -1;
+    hoverTimeSec = -1;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDraggingRoll) return;
+    const dx = e.clientX - dragStartX;
+    if (Math.abs(dx) > 4 && !isRollPaused) {
+      isRollPaused = true;
+      pausedDisplayT = isRecording ? ((Date.now() - recordStartTime) / 1000) : currentSessionT;
+    }
+    const gridW = pitchCanvas.getBoundingClientRect().width - KEY_COL_WIDTH;
+    const pixelsPerSec = gridW / WINDOW_SECS;
+    userScrollTimeOffset = dragStartOffset - (dx / pixelsPerSec);
+    const currentBaseT = isRollPaused ? pausedDisplayT : ((Date.now() - (isRecording ? recordStartTime : sessionStartTime)) / 1000);
+    if (currentBaseT + userScrollTimeOffset < 0) {
+      userScrollTimeOffset = -currentBaseT;
+    }
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (isDraggingRoll) {
+      isDraggingRoll = false;
+      if (pitchCanvas) pitchCanvas.style.cursor = 'pointer';
+      // Jangan jalankan pemutaran klik bila sedang dalam proses merekam
+      if (isRecording) return;
+      // Deteksi jika hanya klik pada papan nada (bukan drag menggeser)
+      const moveDist = Math.hypot(e.clientX - mouseDownClientX, e.clientY - mouseDownClientY);
+      if (moveDist <= 5) {
+        const rect = pitchCanvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        if (clickX > KEY_COL_WIDTH) {
+          const gridW = rect.width - KEY_COL_WIDTH;
+          const pixelsPerSec = gridW / WINDOW_SECS;
+          const rawViewT = (isRollPaused ? pausedDisplayT : currentSessionT) + userScrollTimeOffset;
+          const viewT = Math.max(0, rawViewT);
+          const cursorX = KEY_COL_WIDTH + gridW * 0.32;
+          const targetTime = Math.max(0, viewT + (clickX - cursorX) / pixelsPerSec);
+          seekAndPlayAt(targetTime);
+        }
+      }
+    }
+  });
+}
+function resizeCanvases() {
+  const dpr = window.devicePixelRatio || 1;
+  if (spectrumCanvas) {
+    const specRect = spectrumCanvas.getBoundingClientRect();
+    spectrumCanvas.width = specRect.width * dpr;
+    spectrumCanvas.height = specRect.height * dpr;
+    specCtx = spectrumCanvas.getContext('2d');
+    specCtx.scale(dpr, dpr);
+  }
+  if (pitchCanvas) {
+    const pitchRect = pitchCanvas.getBoundingClientRect();
+    pitchCanvas.width = pitchRect.width * dpr;
+    pitchCanvas.height = pitchRect.height * dpr;
+    pitchCtx = pitchCanvas.getContext('2d');
+    pitchCtx.scale(dpr, dpr);
+  }
+  if (waveformCanvas) {
+    const waveRect = waveformCanvas.getBoundingClientRect();
+    waveformCanvas.width = waveRect.width * dpr;
+    waveformCanvas.height = waveRect.height * dpr;
+    waveformCtx = waveformCanvas.getContext('2d');
+    waveformCtx.scale(dpr, dpr);
+  }
+}
+// ─── Real-Time Processing Loop ───
+const timeDomainBuffer = new Float32Array(2048);
+const freqDomainBuffer = new Float32Array(1024);
+let currentDetectedFreq = -1;
+let currentDetectedNoteInfo = null;
+
+// Median smoothing and time-based hysteresis prevent one noisy frame from creating a new note.
+// Dioptimalkan agar rekaman tidak terlalu sensitif terhadap fluktuasi mikroskopis napas (anti naik-turun liar)
+const PITCH_SMOOTHING_WINDOW = 15;
+const NOTE_SWITCH_HOLD_SECS = 0.28;
+const NOTE_HOLD_OVER_SECS = 0.40;
+let recentPitchReadings = [];
+let stableNoteInfo = null;
+let pendingMidi = null;
+let pendingMidiSince = 0;
+let lastVoicedTime = 0;
+
+function median(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+function stabilizeNote(rawFreq, currentT) {
+  if (rawFreq <= 0) return stableNoteInfo;
+
+  recentPitchReadings.push(rawFreq);
+  if (recentPitchReadings.length > PITCH_SMOOTHING_WINDOW) recentPitchReadings.shift();
+
+  // Gunakan median dari pembacaan frekuensi untuk meredam jitter/vibrato mikro
+  const smoothed = PitchUtils.freqToNote(median(recentPitchReadings));
+  if (!stableNoteInfo) {
+    stableNoteInfo = smoothed;
+    pendingMidi = null;
+    return stableNoteInfo;
+  }
+
+  // Jika nada masih dalam toleransi semitone sama atau desah transien, pertahankan nada stabil
+  if (smoothed.midiNote === stableNoteInfo.midiNote) {
+    stableNoteInfo = smoothed;
+    pendingMidi = null;
+    return stableNoteInfo;
+  }
+
+  // Nada baru harus bertahan konsisten selama minimal 280ms sebelum diizinkan berganti balok nada baru
+  if (pendingMidi !== smoothed.midiNote) {
+    pendingMidi = smoothed.midiNote;
+    pendingMidiSince = currentT;
+  } else if (currentT - pendingMidiSince >= NOTE_SWITCH_HOLD_SECS) {
+    stableNoteInfo = smoothed;
+    pendingMidi = null;
+  }
+  return stableNoteInfo;
+}
+
+function getGuideFeedback(noteInfo, currentT) {
+  const target = guideNotesList.find(item => currentT >= item.startT && currentT <= item.endT);
+  if (!target) return { target: null, cents: null, isHit: false, isNear: false, semitoneDiff: null, isOctaveMatch: false, pitchClassMatch: false };
+
+  if (!noteInfo || noteInfo.freq <= 0) {
+    return { target, cents: null, isHit: false, isNear: false, semitoneDiff: null, isOctaveMatch: false, pitchClassMatch: false };
+  }
+
+  const targetFreq = PitchUtils.midiToFreq(target.midi);
+  const totalCents = Math.round(1200 * Math.log2(noteInfo.freq / targetFreq));
+  const semitoneDiff = noteInfo.midiNote - target.midi;
+
+  // Evaluasi Pitch-Class Dinamis (Solfege Do-Re-Mi tidak mengunci oktaf kaku):
+  // Jika penyanyi bernyanyi 1 oktaf di bawah (-12) atau 1 oktaf di atas (+12),
+  // atau tipe suara pengguna lebih rendah/tinggi, kita tetap validasi kelas nadanya (C, D, E, dll.)!
+  const pitchClassUser = ((noteInfo.midiNote % 12) + 12) % 12;
+  const pitchClassTarget = ((target.midi % 12) + 12) % 12;
+  const isPitchClassMatch = pitchClassUser === pitchClassTarget;
+  const octaveDiff = Math.abs(noteInfo.octave - target.octave);
+  const isOctaveEquivalent = isPitchClassMatch && Math.abs(noteInfo.cents) <= 45;
+
+  // Toleransi Nada Dinamis:
+  // - Sempurna (Hit): deviasi nada di dalam rentang ±40 sen ATAU nada solfege sama di oktaf suara penyanyi
+  // - Dekat (Near Hit): selisih 1 semitone atau nada relatif mendekati target
+  const isHit = Math.abs(totalCents) <= 40 || isOctaveEquivalent;
+  const isNear = !isHit && (Math.abs(totalCents) <= 120 || (isPitchClassMatch && Math.abs(noteInfo.cents) <= 75));
+
+  return { target, cents: isOctaveEquivalent ? Math.round(noteInfo.cents) : totalCents, isHit, isNear, semitoneDiff, isOctaveMatch: isOctaveEquivalent, pitchClassMatch: isPitchClassMatch };
+}
+
+function coalesceMidiBlocks() {
+  if (midiNoteBlocks.length < 2) return;
+  const merged = [];
+  let prev = midiNoteBlocks[0];
+  for (let i = 1; i < midiNoteBlocks.length; i++) {
+    const curr = midiNoteBlocks[i];
+    // Jika nada sama dan jeda mikro di bawah 400ms, gabungkan menjadi satu balok utuh
+    if (curr.midi === prev.midi && (curr.startT - prev.endT) < 0.40) {
+      prev.endT = Math.max(prev.endT, curr.endT);
+      prev.centsList = prev.centsList.concat(curr.centsList);
+      if (curr === activeMidiBlock) activeMidiBlock = prev;
+    } else {
+      // Pertahankan balok jika sedang aktif atau berdurasi memadai
+      if (prev === activeMidiBlock || (prev.endT - prev.startT) >= 0.08) {
+        merged.push(prev);
+      }
+      prev = curr;
+    }
+  }
+  if (prev === activeMidiBlock || (prev.endT - prev.startT) >= 0.08) {
+    merged.push(prev);
+  }
+  if (merged.length > 0) {
+    midiNoteBlocks = merged;
+  }
+}
+
+function processAudioTick() {
+  animFrameId = requestAnimationFrame(processAudioTick);
+  let freq = 0, rmsDb = -90, noteInfo = null;
+  let res = { chest: 33, mask: 33, head: 33 };
+
+  // Mode Berhenti (Stopped): Jangan menerima atau memproses input mikrofon apapun!
+  const isEngineActive = isRecording || isDemoVocalActive;
+
+  if (isEngineActive) {
+    if (isDemoVocalActive && simulatedFreq > 0) {
+      freq = simulatedFreq;
+      noteInfo = simulatedNoteInfo;
+      rmsDb = -18.5;
+      res = { chest: 45, mask: 35, head: 20 };
+    } else if (analyser && fftAnalyser) {
+      analyser.getFloatTimeDomainData(timeDomainBuffer);
+      fftAnalyser.getFloatFrequencyData(freqDomainBuffer);
+      rmsDb = PitchUtils.computeRMS(timeDomainBuffer);
+
+      // Dynamic Noise Gate (-52 dB): Ignore background room hiss while capturing softer singing voices
+      if (rmsDb > -52) {
+        freq = PitchUtils.detectPitch(timeDomainBuffer, audioCtx.sampleRate);
+        noteInfo = freq > 0 ? PitchUtils.freqToNote(freq) : null;
+        res = PitchUtils.computeResonance(freqDomainBuffer, audioCtx.sampleRate, fftAnalyser.fftSize);
+      }
+    }
+  } else {
+    // Bersihkan buffer frekuensi saat berhenti
+    freqDomainBuffer.fill(-120);
+    timeDomainBuffer.fill(0);
+  }
+
+  // Waktu proses: Jika sedang merekam atau simulasi berjalan maju dari 0.
+  // Jika sedang memutar rekaman (audio playback), lakukan interpolasi waktu 60 FPS super mulus (anti patah-patah)!
+  let currentT = 0;
+  if (isRecording) {
+    currentT = (Date.now() - recordStartTime) / 1000;
+  } else if (isDemoVocalActive) {
+    currentT = (Date.now() - sessionStartTime) / 1000;
+  } else if (isPlaybackPlaying) {
+    const now = performance.now();
+    const elapsedSinceLastUpdate = Math.max(0, (now - playbackLastSysTime) / 1000);
+    // Interpolasikan waktu antara update audio agar pergerakan canvas mencapai 60fps mulus
+    currentT = playbackLastAudioTime + elapsedSinceLastUpdate;
+  } else {
+    currentT = recordedTotalDuration > 0 ? recordedTotalDuration : 0;
+  }
+
+  currentSessionT = currentT;
+
+  
+
+  const stabilized = (freq > 0 && noteInfo) ? stabilizeNote(freq, currentT) : null;
+
+  currentDetectedFreq = freq;
+  currentDetectedNoteInfo = stabilized || noteInfo;
+
+  // Level Meter
+  const volPct = isEngineActive ? Math.max(0, Math.min(100, (rmsDb + 60) * (100 / 60))) : 0;
+  document.getElementById('levelBar').style.width = volPct + '%';
+  document.getElementById('rmsDbVal').textContent = (isEngineActive && isFinite(rmsDb)) ? rmsDb.toFixed(1) + ' dB' : '-inf dB';
+
+  const guideFeedback = getGuideFeedback(currentDetectedNoteInfo, currentT);
+  const targetLabel = document.getElementById('activeTargetLabel');
+  if (targetLabel) {
+    targetLabel.textContent = guideFeedback.target
+      ? `${guideFeedback.target.solfege || 'Target'} · ${guideFeedback.target.note}${guideFeedback.target.octave}`
+      : guideNotesList.length ? 'Menunggu target berikutnya' : 'Latihan bebas';
+  }
+
+  // Telemetry in Indonesian
+  if (isEngineActive && currentDetectedNoteInfo && freq > 0) {
+    document.getElementById('liveNoteVal').textContent = `${currentDetectedNoteInfo.note}${currentDetectedNoteInfo.octave}`;
+    const centsVal = Math.round(currentDetectedNoteInfo.cents);
+    document.getElementById('liveCentsVal').textContent = `${centsVal >= 0 ? '+' : ''}${centsVal} sen`;
+    document.getElementById('liveFreqVal').textContent = `${currentDetectedNoteInfo.freq.toFixed(1)} Hz`;
+    const statusEl = document.getElementById('tuningStatusText');
+
+    if (guideFeedback.target) {
+      const guideCents = guideFeedback.cents;
+      const targetNoteStr = `${guideFeedback.target.note}${guideFeedback.target.octave}`;
+      if (guideFeedback.isHit) {
+        statusEl.textContent = guideFeedback.isOctaveMatch 
+          ? `Tepat nada ${guideFeedback.target.solfege || targetNoteStr}, oktaf ${currentDetectedNoteInfo.octave}`
+          : `Tepat nada ${targetNoteStr}`;
+        statusEl.className = 'text-green font-bold';
+      } else if (guideFeedback.isNear) {
+        statusEl.textContent = `Mendekati ${targetNoteStr}, selisih ${guideCents >= 0 ? '+' : ''}${guideCents} sen`;
+        statusEl.className = 'text-yellow font-bold';
+      } else if (guideCents < -25) {
+        statusEl.textContent = `Nada ${targetNoteStr} kurang tinggi, selisih ${guideCents} sen`;
+        statusEl.className = 'text-red font-bold';
+      } else {
+        statusEl.textContent = `Nada ${targetNoteStr} terlalu tinggi, selisih +${guideCents} sen`;
+        statusEl.className = 'text-yellow font-bold';
+      }
+    } else if (Math.abs(currentDetectedNoteInfo.cents) <= 20) {
+      statusEl.textContent = 'Intonasi tepat';
+      statusEl.className = 'text-green font-bold';
+    } else if (currentDetectedNoteInfo.cents < -20) {
+      statusEl.textContent = `Nada terlalu rendah, selisih ${centsVal} sen`;
+      statusEl.className = 'text-red font-bold';
+    } else {
+      statusEl.textContent = `Nada terlalu tinggi, selisih +${centsVal} sen`;
+      statusEl.className = 'text-yellow font-bold';
+    }
+  } else {
+    document.getElementById('liveNoteVal').textContent = '';
+    document.getElementById('liveCentsVal').textContent = '0 sen';
+    document.getElementById('liveFreqVal').textContent = '0.0 Hz';
+    const statusEl = document.getElementById('tuningStatusText');
+    statusEl.textContent = isEngineActive ? 'Menunggu suara vokal...' : 'Mikrofon dijeda';
+    statusEl.className = 'text-muted';
+  }
+
+  // Resonance Bars & Focus Indicator
+  const chestW = (isEngineActive && freq > 0) ? res.chest : 0;
+  const maskW  = (isEngineActive && freq > 0) ? res.mask  : 0;
+  const headW  = (isEngineActive && freq > 0) ? res.head  : 0;
+
+  document.getElementById('barChest').style.width = chestW + '%';
+  document.getElementById('barMask').style.width  = maskW  + '%';
+  document.getElementById('barHead').style.width  = headW  + '%';
+  document.getElementById('valChest').textContent = (isEngineActive && freq > 0 ? res.chest : 0) + '%';
+  document.getElementById('valMask').textContent  = (isEngineActive && freq > 0 ? res.mask  : 0) + '%';
+  document.getElementById('valHead').textContent  = (isEngineActive && freq > 0 ? res.head  : 0) + '%';
+
+  const focusEl = document.getElementById('liveFocusTitle');
+  const scoreEl = document.getElementById('liveFocusScore');
+  const badgeEl = document.getElementById('liveFocusBadge');
+  const progChest = document.getElementById('progBarChest');
+  const progMask = document.getElementById('progBarMask');
+  const progHead = document.getElementById('progBarHead');
+
+  if (focusEl && scoreEl) {
+    if (!isEngineActive || freq <= 0) {
+      focusEl.textContent = isEngineActive ? 'Menunggu Suara...' : 'Sesi Berhenti';
+      scoreEl.textContent = '0% fokus';
+      if (badgeEl) {
+        badgeEl.textContent = isEngineActive ? 'MENDENGARKAN' : 'STANDBY';
+        badgeEl.className = isEngineActive ? 'badge badge-green' : 'badge badge-purple';
+      }
+      if (progChest) progChest.style.width = '0%';
+      if (progMask) progMask.style.width = '0%';
+      if (progHead) progHead.style.width = '0%';
+    } else {
+      const entries = [
+        { name: 'Suara Dada', val: res.chest, color: '#3b82f6', tag: 'DADA' },
+        { name: 'Suara Campuran', val: res.mask, color: '#10b981', tag: 'CAMPURAN' },
+        { name: 'Suara Kepala', val: res.head, color: '#a855f7', tag: 'KEPALA' }
+      ];
+      entries.sort((a, b) => b.val - a.val);
+      focusEl.textContent = entries[0].name;
+      scoreEl.textContent = `${entries[0].val}% dominan`;
+      if (badgeEl) {
+        badgeEl.textContent = entries[0].tag;
+        badgeEl.style.backgroundColor = entries[0].color;
+        badgeEl.style.color = '#ffffff';
+      }
+      const sumRes = Math.max(1, res.chest + res.mask + res.head);
+      if (progChest) progChest.style.width = `${(res.chest / sumRes) * 100}%`;
+      if (progMask) progMask.style.width = `${(res.mask / sumRes) * 100}%`;
+      if (progHead) progHead.style.width = `${(res.head / sumRes) * 100}%`;
+    }
+  }
+
+  // Track Real-Time MIDI Note Blocks with Stability & Hang-Time Hold
+  // Expand view range automatically if pitch exceeds focus bounds (C3-C5)
+  if (currentDetectedNoteInfo && freq > 0 && currentRollMode === 'focus' && (currentDetectedNoteInfo.midiNote < 48 || currentDetectedNoteInfo.midiNote > 72)) {
+    setRollRange('full');
+  }
+  const isPitchValid = currentDetectedNoteInfo && freq > 0 && currentDetectedNoteInfo.midiNote >= 36 && currentDetectedNoteInfo.midiNote <= 84;
+
+  if (isPitchValid) {
+    lastVoicedTime = currentT;
+    const midi = currentDetectedNoteInfo.midiNote;
+    if (!activeMidiBlock) {
+      activeMidiBlock = {
+        midi: midi,
+        note: currentDetectedNoteInfo.note,
+        octave: currentDetectedNoteInfo.octave,
+        startT: currentT,
+        endT: currentT + 0.12,
+        centsList: [currentDetectedNoteInfo.cents]
+      };
+      midiNoteBlocks.push(activeMidiBlock);
+    } else if (activeMidiBlock.midi === midi) {
+      activeMidiBlock.endT = currentT + 0.12;
+      activeMidiBlock.centsList.push(currentDetectedNoteInfo.cents);
+    } else {
+      activeMidiBlock.endT = currentT;
+      activeMidiBlock = {
+        midi: midi,
+        note: currentDetectedNoteInfo.note,
+        octave: currentDetectedNoteInfo.octave,
+        startT: currentT,
+        endT: currentT + 0.12,
+        centsList: [currentDetectedNoteInfo.cents]
+      };
+      midiNoteBlocks.push(activeMidiBlock);
+    }
+  } else {
+    pendingMidi = null;
+    recentPitchReadings = [];
+    stableNoteInfo = null;
+    if (activeMidiBlock && (currentT - lastVoicedTime) > NOTE_HOLD_OVER_SECS) {
+      activeMidiBlock.endT = lastVoicedTime + 0.08;
+      activeMidiBlock = null;
+    }
+  }
+
+  // Merge any adjacent small fragments of the same pitch
+  coalesceMidiBlocks();
+
+  // Record history when recording is active (or in demo mode)
+  if (isRecording || isDemoVocalActive) {
+    pitchHistory.push({
+      t: currentT,
+      freq: currentDetectedNoteInfo?.freq ?? 0,
+      cents: currentDetectedNoteInfo?.cents ?? 0,
+      note: currentDetectedNoteInfo?.note ?? '',
+      octave: currentDetectedNoteInfo?.octave ?? null,
+      midi: currentDetectedNoteInfo?.midiNote ?? null
+    });
+    resonanceHistory.push(res);
+    rmsHistory.push(rmsDb);
+    updateRunningTelemetry();
+  }
+
+  if (isRecording) {
+    let peak = 0;
+    for (let i = 0; i < timeDomainBuffer.length; i += 8) {
+      const val = Math.abs(timeDomainBuffer[i]);
+      if (val > peak) peak = val;
+    }
+    liveWaveformPeaks.push({ t: currentT, amp: peak });
+  }
+
+  drawRealtimeSpectrum(freqDomainBuffer, freq);
+  drawMidiPianoRoll(currentT);
+  drawVocalWaveform(currentT);
+}
+
+// ─── Canvas 1: Real-Time Sound Spectrum ───
+function drawRealtimeSpectrum(fftBuffer, fundamentalFreq) {
+  if (!specCtx) return;
+  const W = spectrumCanvas.getBoundingClientRect().width;
+  const H = spectrumCanvas.getBoundingClientRect().height;
+  specCtx.clearRect(0, 0, W, H);
+
+  // Background baseline and grid
+  specCtx.fillStyle = '#090d16';
+  specCtx.fillRect(0, 0, W, H);
+
+  // Frequency range: 50 Hz to 5000 Hz
+  const minFreq = 50, maxFreq = 5000;
+  const sampleRate = audioCtx ? audioCtx.sampleRate : 44100;
+  const binHz = sampleRate / 2048;
+
+  // Resonance Zone boundary lines: 100Hz, 400Hz, 2000Hz
+  const zones = [100, 400, 2000];
+  specCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  specCtx.setLineDash([3, 3]);
+  zones.forEach(z => {
+    const x = ((z - minFreq) / (maxFreq - minFreq)) * W;
+    if (x > 0 && x < W) {
+      specCtx.beginPath();
+      specCtx.moveTo(x, 0); specCtx.lineTo(x, H);
+      specCtx.stroke();
+    }
+  });
+  specCtx.setLineDash([]);
+
+  // Draw FFT magnitude spectrum bars / smooth fill
+  specCtx.fillStyle = 'rgba(71, 85, 105, 0.45)';
+
+  specCtx.beginPath();
+  specCtx.moveTo(0, H);
+  const numBins = Math.floor(maxFreq / binHz);
+  const minBin = Math.floor(minFreq / binHz);
+  for (let b = minBin; b < numBins && b < fftBuffer.length; b++) {
+    const currentHz = b * binHz;
+    const x = ((currentHz - minFreq) / (maxFreq - minFreq)) * W;
+    const db = fftBuffer[b];
+    const norm = Math.max(0, Math.min(1, (db + 90) / 70));
+    const y = H - norm * (H - 12);
+    specCtx.lineTo(x, y);
+  }
+  specCtx.lineTo(W, H);
+  specCtx.closePath();
+  specCtx.fill();
+
+  // Highlight fundamental pitch peak (F0)
+  if (fundamentalFreq > minFreq && fundamentalFreq < maxFreq) {
+    const f0X = ((fundamentalFreq - minFreq) / (maxFreq - minFreq)) * W;
+    specCtx.strokeStyle = '#f43f5e';
+    specCtx.lineWidth = 2;
+    specCtx.beginPath();
+    specCtx.moveTo(f0X, 0); specCtx.lineTo(f0X, H);
+    specCtx.stroke();
+
+    // F0 Badge
+    specCtx.fillStyle = '#f43f5e';
+    specCtx.font = 'bold 10px JetBrains Mono, monospace';
+    const noteBadge = currentDetectedNoteInfo ? `[${currentDetectedNoteInfo.note}${currentDetectedNoteInfo.octave}] ` : '';
+    specCtx.fillText(`Nada: ${fundamentalFreq.toFixed(1)} Hz ${noteBadge}`, Math.min(f0X + 5, W - 120), 16);
+  }
+}
+
+// ─── Playhead View, Smule-Style Static Cursor & Interactive Panning ───
+let isRollPaused = false;
+let pausedDisplayT = 0;
+let userScrollTimeOffset = 0; // Detik offset geser pengguna
+let isDraggingRoll = false;
+let dragStartX = 0;
+let dragStartOffset = 0;
+let hoverCanvasX = -1;
+let hoverCanvasY = -1;
+let hoverTimeSec = -1;
+let currentSessionT = 0;
+let isScrubberDragging = false;
+
+function formatMmSs(totalSec) {
+  const s = Math.max(0, Math.floor(totalSec || 0));
+  const mm = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+function getTotalAudioDuration() {
+  const player = document.getElementById('audioPlayback');
+  if (player && player.src && recordedTotalDuration > 0) {
+    return Math.max(recordedTotalDuration, isFinite(player.duration) ? player.duration : 0);
+  }
+  if (customSongAudioElement && !isNaN(customSongAudioElement.duration) && customSongAudioElement.duration > 0) {
+    return customSongAudioElement.duration;
+  }
+  if (guideNotesList && guideNotesList.length) {
+    return Math.max(30, Math.max(...guideNotesList.map(n => n.endT)));
+  }
+  return 60;
+}
+
+function seekAndPlayAt(targetTime) {
+  if (isRecording) return; // Jangan pernah memutar audio saat proses perekaman sedang berlangsung!
+  const maxDur = getTotalAudioDuration();
+  const t = Math.max(0, Math.min(targetTime, maxDur));
+  userScrollTimeOffset = 0;
+  isRollPaused = false;
+
+  const player = document.getElementById('audioPlayback');
+  const hasRecording = player && player.src && player.src !== window.location.href;
+  const hasCustomSong = customSongAudioElement && !isNaN(customSongAudioElement.duration);
+
+  if (hasRecording) {
+    player.currentTime = t;
+    playbackLastAudioTime = t;
+    playbackLastSysTime = performance.now();
+    isPlaybackPlaying = true;
+    player.play().catch(e => console.log('Audio playback play failed:', e));
+    if (hasCustomSong) {
+      customSongAudioElement.currentTime = t;
+      customSongAudioElement.play().catch(e => console.log(e));
+    }
+  } else if (hasCustomSong) {
+    customSongAudioElement.currentTime = t;
+    playbackLastAudioTime = t;
+    playbackLastSysTime = performance.now();
+    isPlaybackPlaying = true;
+    customSongAudioElement.play().catch(e => console.log('Song playback play failed:', e));
+  } else {
+    // Putar melodi panduan piano dari detik tersebut
+    playPianoMelodyFrom(t);
+  }
+  updatePlaybackButtonUI(true);
+}
+
+function playPianoMelodyFrom(startFromT) {
+  if (!guideNotesList || !guideNotesList.length) return;
+  guideAudioTimeoutIds.forEach(id => clearTimeout(id));
+  guideAudioTimeoutIds = [];
+  isGuideAudioPlaying = true;
+  isPlaybackPlaying = true;
+  playbackLastAudioTime = startFromT;
+  playbackLastSysTime = performance.now();
+
+  const notesToPlay = guideNotesList.filter(item => item.endT > startFromT);
+  notesToPlay.forEach(item => {
+    const delaySec = Math.max(0, item.startT - startFromT);
+    const durSec = Math.max(0.3, item.endT - Math.max(item.startT, startFromT));
+    const tid = setTimeout(() => {
+      if (!isPlaybackPlaying) return;
+      playPianoTone(PitchUtils.midiToFreq(item.midi), durSec);
+    }, delaySec * 1000);
+    guideAudioTimeoutIds.push(tid);
+  });
+
+  const maxEndT = Math.max(...guideNotesList.map(i => i.endT));
+  const remainingSec = Math.max(0, maxEndT - startFromT);
+  const finishTid = setTimeout(() => {
+    isPlaybackPlaying = false;
+    isGuideAudioPlaying = false;
+    updatePlaybackButtonUI(false);
+  }, (remainingSec + 0.5) * 1000);
+  guideAudioTimeoutIds.push(finishTid);
+}
+
+function toggleAudioPlayback() {
+  if (isRecording) return; // Jangan memicu pemutaran jika sedang merekam!
+  const player = document.getElementById('audioPlayback');
+  const hasRecording = player && player.src && player.src !== window.location.href;
+  const hasCustomSong = customSongAudioElement && !isNaN(customSongAudioElement.duration);
+
+  if (isPlaybackPlaying) {
+    // Hentikan pemutaran
+    if (hasRecording) player.pause();
+    if (hasCustomSong) customSongAudioElement.pause();
+    guideAudioTimeoutIds.forEach(id => clearTimeout(id));
+    guideAudioTimeoutIds = [];
+    isPlaybackPlaying = false;
+    isGuideAudioPlaying = false;
+    updatePlaybackButtonUI(false);
+  } else {
+    // Mulai pemutaran dari waktu saat ini
+    const startT = (isRollPaused ? pausedDisplayT : currentSessionT) + userScrollTimeOffset;
+    seekAndPlayAt(startT);
+  }
+}
+
+function stopAllAudioPlayback() {
+  isPlaybackPlaying = false;
+  isGuideAudioPlaying = false;
+  guideAudioTimeoutIds.forEach(id => clearTimeout(id));
+  guideAudioTimeoutIds = [];
+  const player = document.getElementById('audioPlayback');
+  if (player) {
+    player.pause();
+    player.currentTime = 0;
+  }
+  if (customSongAudioElement) {
+    customSongAudioElement.pause();
+    customSongAudioElement.currentTime = 0;
+  }
+  updatePlaybackButtonUI(false);
+}
+
+function updatePlaybackButtonUI(isPlaying) {
+  const btn = document.getElementById('btnPlaybackToggle');
+  const textEl = document.getElementById('playbackBtnText');
+  const iconEl = document.getElementById('playbackIcon');
+  if (!btn || !textEl || !iconEl) return;
+  if (isPlaying) {
+    btn.classList.add('btn-primary');
+    textEl.textContent = 'Jeda';
+    iconEl.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    btn.classList.remove('btn-primary');
+    textEl.textContent = 'Putar';
+    iconEl.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+  }
+}
+
+function onScrubberInput(e) {
+  isScrubberDragging = true;
+  const val = parseFloat(e.target.value);
+  const curTimeEl = document.getElementById('scrubberCurrentTime');
+  if (curTimeEl) curTimeEl.textContent = formatMmSs(val);
+}
+
+function onScrubberChange(e) {
+  isScrubberDragging = false;
+  const val = parseFloat(e.target.value);
+  seekAndPlayAt(val);
+}
+
+function togglePauseRoll() {
+  const btn = document.getElementById('btnPauseRoll');
+  isRollPaused = !isRollPaused;
+  if (isRollPaused) {
+    pausedDisplayT = (Date.now() - (isRecording ? recordStartTime : sessionStartTime)) / 1000;
+    btn.innerHTML = `
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Lanjut</span>
+    `;
+    btn.classList.add('btn-primary');
+  } else {
+    btn.innerHTML = `
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <span>Jeda</span>
+    `;
+    btn.classList.remove('btn-primary');
+    userScrollTimeOffset = 0;
+  }
+}
+
+function seekRollRelative(deltaSecs) {
+  userScrollTimeOffset += deltaSecs;
+  // Jangan biarkan waktu geser mundur ke angka minus (di bawah 0 detik)
+  const currentBaseT = isRollPaused ? pausedDisplayT : ((Date.now() - (isRecording ? recordStartTime : sessionStartTime)) / 1000);
+  if (currentBaseT + userScrollTimeOffset < 0) {
+    userScrollTimeOffset = -currentBaseT;
+  }
+  if (!isRollPaused) {
+    isRollPaused = true;
+    pausedDisplayT = isRecording ? ((Date.now() - recordStartTime) / 1000) : recordedTotalDuration;
+    const btn = document.getElementById('btnPauseRoll');
+    if (btn) {
+      btn.innerHTML = `
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Lanjut</span>
+      `;
+      btn.classList.add('btn-primary');
+    }
+  }
+}
+
+function resetRollView() {
+  userScrollTimeOffset = 0;
+  if (isRollPaused) {
+    togglePauseRoll();
+  }
+}
+
+// ─── Canvas 2: Synchronized Piano Roll (Smule-Style Static Target Cursor) ───
+function drawMidiPianoRoll(currentT) {
+  if (!pitchCtx) return;
+  const W = pitchCanvas.getBoundingClientRect().width;
+  const H = pitchCanvas.getBoundingClientRect().height;
+  pitchCtx.clearRect(0, 0, W, H);
+
+  const noteHeight = H / TOTAL_NOTES;
+  const gridWidth = W - KEY_COL_WIDTH;
+  const activeMidi = (currentDetectedFreq > 0 && currentDetectedNoteInfo) ? currentDetectedNoteInfo.midiNote : null;
+
+  // Smule Concept: Kursor penyanyi diam/statis di 30% area roll kanan setelah tuts piano
+  // Notasi target datang mengalir dari KANAN menuju KIRI menabrak garis cursor ini!
+  const CURSOR_RATIO = 0.32; // Garis target statis berada di 32% lebar roll
+  const cursorX = KEY_COL_WIDTH + gridWidth * CURSOR_RATIO;
+
+  // Waktu yang sedang dilihat (mendukung jeda pause dan drag/geser pengguna)
+  // Dipastikan viewT tidak boleh negatif (< 0)
+  const rawViewT = (isRollPaused ? pausedDisplayT : currentT) + userScrollTimeOffset;
+  const viewT = Math.max(0, rawViewT);
+  const pixelsPerSec = gridWidth / WINDOW_SECS;
+
+  // 1. Draw Piano Roll Grid & Keys
+  for (let i = 0; i < TOTAL_NOTES; i++) {
+    const midi = PITCH_MIN_MIDI + i;
+    const yTop = H - (i + 1) * noteHeight;
+    const isBlack = SHARP_MAP[midi % 12] === 1;
+    const isC = midi % 12 === 0;
+    const isMiddleC = midi === 60; // C4
+
+    // Grid row background
+    pitchCtx.fillStyle = isBlack ? '#0c111e' : '#080c16';
+    pitchCtx.fillRect(KEY_COL_WIDTH, yTop, gridWidth, noteHeight);
+
+    // Grid horizontal line
+    if (isMiddleC) {
+      pitchCtx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+      pitchCtx.lineWidth = 1.5;
+    } else if (isC) {
+      pitchCtx.strokeStyle = '#334155';
+      pitchCtx.lineWidth = 1.2;
+    } else {
+      pitchCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      pitchCtx.lineWidth = 0.8;
+    }
+    pitchCtx.beginPath();
+    pitchCtx.moveTo(KEY_COL_WIDTH, yTop);
+    pitchCtx.lineTo(W, yTop);
+    pitchCtx.stroke();
+
+    // Piano Key (Left side)
+    const isActiveKey = (activeMidi === midi);
+    if (isActiveKey) {
+      pitchCtx.fillStyle = '#4f46e5';
+    } else {
+      pitchCtx.fillStyle = isBlack ? '#0f172a' : '#f8fafc';
+    }
+    const keyWidth = isBlack ? KEY_COL_WIDTH - 18 : KEY_COL_WIDTH - 2;
+    pitchCtx.fillRect(0, yTop + 0.5, keyWidth, noteHeight - 1);
+
+    pitchCtx.strokeStyle = isBlack ? '#1e293b' : '#cbd5e1';
+    pitchCtx.lineWidth = 1;
+    pitchCtx.strokeRect(0, yTop + 0.5, keyWidth, noteHeight - 1);
+
+    // Key Note Label on C keys or when actively pressed
+    if (isC || isActiveKey) {
+      pitchCtx.fillStyle = (isBlack || isActiveKey) ? '#ffffff' : '#0f172a';
+      pitchCtx.font = `${isActiveKey ? 'bold ' : '600 '}9px JetBrains Mono, monospace`;
+      let noteName = PitchUtils.midiToName(midi);
+      if (isMiddleC) noteName += ' (Mid)';
+      pitchCtx.fillText(noteName, 4, yTop + noteHeight - 3);
+    }
+  }
+
+  // Vertical time grid lines (relative to static cursor line)
+  pitchCtx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+  pitchCtx.lineWidth = 1;
+  pitchCtx.setLineDash([2, 4]);
+  const secStep = 1;
+  const startSec = Math.floor(viewT - (cursorX - KEY_COL_WIDTH) / pixelsPerSec);
+  const endSec = Math.ceil(viewT + (W - cursorX) / pixelsPerSec);
+  for (let s = startSec; s <= endSec; s++) {
+    const x = cursorX + (s - viewT) * pixelsPerSec;
+    if (x >= KEY_COL_WIDTH && x <= W) {
+      pitchCtx.beginPath();
+      pitchCtx.moveTo(x, 0); pitchCtx.lineTo(x, H);
+      pitchCtx.stroke();
+
+      // Second marker text on top
+      pitchCtx.fillStyle = '#64748b';
+      pitchCtx.font = '8px JetBrains Mono, monospace';
+      pitchCtx.fillText(`${s}s`, x + 3, 11);
+    }
+  }
+  pitchCtx.setLineDash([]);
+
+  // Vertical boundary separating keys from rolling canvas
+  pitchCtx.strokeStyle = '#334155';
+  pitchCtx.lineWidth = 2;
+  pitchCtx.beginPath();
+  pitchCtx.moveTo(KEY_COL_WIDTH, 0);
+  pitchCtx.lineTo(KEY_COL_WIDTH, H);
+  pitchCtx.stroke();
+
+  // 2. Draw Target Guide Melody Blocks (Flowing from Right to Left!)
+  let isHitActive = false;
+  guideNotesList.forEach(b => {
+    // Clamp visual midi to visible range if slightly outside, so it is never completely hidden
+    const effectiveMidi = Math.max(PITCH_MIN_MIDI, Math.min(PITCH_MAX_MIDI, b.midi));
+    const x1 = cursorX + (b.startT - viewT) * pixelsPerSec;
+    const x2 = cursorX + (b.endT - viewT) * pixelsPerSec;
+    const w = Math.max(12, x2 - x1);
+    if (x2 < KEY_COL_WIDTH || x1 > W) return; // Out of visible canvas
+
+    const noteIndex = effectiveMidi - PITCH_MIN_MIDI;
+    const yTop = H - (noteIndex + 1) * noteHeight;
+    const blockH = Math.max(7, noteHeight - 2);
+
+    const isCurrentTarget = currentT >= b.startT && currentT <= b.endT;
+    const guideFeedback = isCurrentTarget ? getGuideFeedback(currentDetectedNoteInfo, currentT) : null;
+    const isHit = Boolean(guideFeedback?.isHit);
+    const isNear = Boolean(guideFeedback?.isNear);
+    if (isHit || isNear) isHitActive = true;
+
+    // Glowing target block in Smule-style
+    // Dinamis: hijau jika pas, biru-cyan jika mendekati/toleran, ungu default jika belum tercapai
+    let blockBg = 'rgba(71, 85, 105, 0.25)';
+    let blockBorder = '#64748b';
+    let blockLineWidth = 1;
+
+    if (isHit) {
+      blockBg = 'rgba(21, 128, 61, 0.4)';
+      blockBorder = '#15803d';
+      blockLineWidth = 1.5;
+    } else if (isNear) {
+      blockBg = 'rgba(180, 83, 9, 0.35)';
+      blockBorder = '#b45309';
+      blockLineWidth = 1;
+    }
+
+    pitchCtx.fillStyle = blockBg;
+    pitchCtx.strokeStyle = blockBorder;
+    pitchCtx.lineWidth = blockLineWidth;
+
+    const renderX = Math.max(KEY_COL_WIDTH, x1);
+    const renderW = Math.max(8, x2 - renderX);
+    if (pitchCtx.roundRect) {
+      pitchCtx.beginPath();
+      pitchCtx.roundRect(renderX, yTop + 1, renderW, blockH, 5);
+      pitchCtx.fill();
+      pitchCtx.stroke();
+    } else {
+      pitchCtx.fillRect(renderX, yTop + 1, renderW, blockH);
+      pitchCtx.strokeRect(renderX, yTop + 1, renderW, blockH);
+    }
+
+    // Label inside guide block (Smule-style: Notasi Nada + Solfege)
+    if (renderW >= 20) {
+      pitchCtx.fillStyle = isHit ? '#ecfdf5' : '#e0e7ff';
+      pitchCtx.font = 'bold 9px JetBrains Mono, monospace';
+      const solfegeTxt = b.solfege ? ` ${b.solfege}` : '';
+      const chordTxt = b.chord ? ` / ${b.chord}` : '';
+      const label = renderW >= 36 ? `${b.note}${b.octave}${solfegeTxt}${chordTxt}` : `${b.note}${b.octave}`;
+      pitchCtx.fillText(label, renderX + 4, yTop + blockH - 3);
+    }
+  });
+
+  // Toggle hit indicator badge
+  const hitBadge = document.getElementById('hitIndicator');
+  if (hitBadge) {
+    hitBadge.style.display = isHitActive ? 'inline-flex' : 'none';
+  }
+
+  // 3. Draw Real-Time Sung MIDI Note Blocks (Trailing from Cursor to the Left)
+  midiNoteBlocks.forEach(b => {
+    const clampedMidi = Math.max(PITCH_MIN_MIDI, Math.min(PITCH_MAX_MIDI, b.midi));
+    const x1 = cursorX + (b.startT - viewT) * pixelsPerSec;
+    const x2 = cursorX + (b.endT - viewT) * pixelsPerSec;
+    if (x2 < KEY_COL_WIDTH || x1 > W) return;
+
+    const noteIndex = clampedMidi - PITCH_MIN_MIDI;
+    const yTop = H - (noteIndex + 1) * noteHeight;
+    const blockH = Math.max(7, noteHeight - 2);
+
+    const avgCents = b.centsList.length
+      ? b.centsList.reduce((acc, c) => acc + c, 0) / b.centsList.length
+      : 0;
+
+    let fillCol = '#10b981'; // In-tune: Hijau Zamrud
+    let borderCol = '#059669';
+    let labelSuffix = 'PAS';
+    if (avgCents < -20) {
+      fillCol = '#ef4444'; // Flat: Merah Rose
+      borderCol = '#dc2626';
+      labelSuffix = 'FALS BAWAH';
+    } else if (avgCents > 20) {
+      fillCol = '#f59e0b'; // Sharp: Kuning Amber
+      borderCol = '#d97706';
+      labelSuffix = 'FALS ATAS';
+    }
+
+    pitchCtx.shadowBlur = 8;
+    pitchCtx.shadowColor = fillCol;
+    pitchCtx.fillStyle = fillCol;
+    pitchCtx.strokeStyle = borderCol;
+    pitchCtx.lineWidth = 1.5;
+
+    const renderX = Math.max(KEY_COL_WIDTH, x1);
+    const renderW = Math.max(6, x2 - renderX);
+    if (pitchCtx.roundRect) {
+      pitchCtx.beginPath();
+      pitchCtx.roundRect(renderX, yTop + 1, renderW, blockH, 5);
+      pitchCtx.fill();
+      pitchCtx.stroke();
+    } else {
+      pitchCtx.fillRect(renderX, yTop + 1, renderW, blockH);
+      pitchCtx.strokeRect(renderX, yTop + 1, renderW, blockH);
+    }
+    pitchCtx.shadowBlur = 0;
+
+    if (renderW >= 28) {
+      pitchCtx.fillStyle = '#ffffff';
+      pitchCtx.font = 'bold 9px JetBrains Mono, monospace';
+      const centsStr = Math.round(avgCents) >= 0 ? `+${Math.round(avgCents)} sen` : `${Math.round(avgCents)} sen`;
+      const label = renderW >= 65 ? `${b.note}${b.octave} ${centsStr} [${labelSuffix}]` : `${b.note}${b.octave}`;
+      pitchCtx.fillText(label, renderX + 4, yTop + blockH - 3);
+    }
+  });
+
+  // 4. Smule-Style Static Target Line & Live Floating Singer Cursor
+  // Garis target vertikal statis tempat nada harus dibidik
+  pitchCtx.strokeStyle = 'rgba(16, 185, 129, 0.85)';
+  pitchCtx.lineWidth = 2;
+  pitchCtx.setLineDash([4, 3]);
+  pitchCtx.beginPath();
+  pitchCtx.moveTo(cursorX, 0);
+  pitchCtx.lineTo(cursorX, H);
+  pitchCtx.stroke();
+  pitchCtx.setLineDash([]);
+
+  // Kursor penyanyi hidup yang NAIK-TURUN mengikuti nada pengguna saat ini!
+  if (currentDetectedFreq > 0 && currentDetectedNoteInfo) {
+    const clampedMidi = Math.max(PITCH_MIN_MIDI, Math.min(PITCH_MAX_MIDI, activeMidi));
+    const noteIdx = clampedMidi - PITCH_MIN_MIDI;
+    const centsOffset = (currentDetectedNoteInfo.cents || 0) / 100; // Frase nada di antara baris
+    const singerY = H - (noteIdx + 0.5 + centsOffset) * noteHeight;
+
+    // Pitch Cursor Indicator
+    pitchCtx.shadowBlur = 0;
+    pitchCtx.fillStyle = '#15803d';
+    pitchCtx.beginPath();
+    pitchCtx.arc(cursorX, singerY, 4.5, 0, Math.PI * 2);
+    pitchCtx.fill();
+
+    pitchCtx.fillStyle = '#ffffff';
+    pitchCtx.beginPath();
+    pitchCtx.arc(cursorX, singerY, 2, 0, Math.PI * 2);
+    pitchCtx.fill();
+
+    // Mini Live Note Tag next to cursor
+    pitchCtx.fillStyle = '#ffffff';
+    pitchCtx.font = 'bold 10px JetBrains Mono, monospace';
+    const centsTxt = currentDetectedNoteInfo.cents >= 0 ? `+${currentDetectedNoteInfo.cents}` : `${currentDetectedNoteInfo.cents}`;
+    pitchCtx.fillText(`${currentDetectedNoteInfo.note}${currentDetectedNoteInfo.octave} · ${centsTxt} sen`, cursorX + 12, singerY + 4);
+  } else {
+    // Idle marker resting on cursor line
+    pitchCtx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+    pitchCtx.beginPath();
+    pitchCtx.arc(cursorX, H / 2, 4.5, 0, Math.PI * 2);
+    pitchCtx.fill();
+  }
+
+  // Top header indicator for static cursor
+  pitchCtx.fillStyle = '#10b981';
+  pitchCtx.beginPath();
+  pitchCtx.moveTo(cursorX - 6, 0);
+  pitchCtx.lineTo(cursorX + 6, 0);
+  pitchCtx.lineTo(cursorX, 8);
+  pitchCtx.closePath();
+  pitchCtx.fill();
+
+  // 5. Interactive Hover Playhead & Time Marker
+  if (hoverCanvasX > KEY_COL_WIDTH && hoverTimeSec >= 0) {
+    pitchCtx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    pitchCtx.lineWidth = 1.5;
+    pitchCtx.setLineDash([3, 2]);
+    pitchCtx.beginPath();
+    pitchCtx.moveTo(hoverCanvasX, 0);
+    pitchCtx.lineTo(hoverCanvasX, H);
+    pitchCtx.stroke();
+    pitchCtx.setLineDash([]);
+
+    // Hover time badge at top of line
+    const badgeW = 74;
+    const badgeH = 18;
+    const badgeX = Math.min(Math.max(KEY_COL_WIDTH + 2, hoverCanvasX - badgeW / 2), W - badgeW - 2);
+    pitchCtx.fillStyle = '#0f172a';
+    pitchCtx.fillRect(badgeX, 2, badgeW, badgeH);
+    pitchCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    pitchCtx.lineWidth = 1;
+    pitchCtx.strokeRect(badgeX, 2, badgeW, badgeH);
+    pitchCtx.fillStyle = '#ffffff';
+    pitchCtx.font = 'bold 10px JetBrains Mono, monospace';
+    pitchCtx.textAlign = 'center';
+    pitchCtx.fillText(`▶ ${hoverTimeSec.toFixed(1)}s`, badgeX + badgeW / 2, 14);
+    pitchCtx.textAlign = 'start';
+  }
+}
+// ─── Canvas 3: Vocal Audio Waveform (DAW Sound Wave Track) ───
+function extractWaveformData(audioBuffer) {
+  try {
+    const channelData = audioBuffer.getChannelData(0);
+    const totalSamples = channelData.length;
+    const totalBars = 650;
+    const blockSize = Math.max(1, Math.floor(totalSamples / totalBars));
+    const peaks = [];
+
+    for (let i = 0; i < totalBars; i++) {
+      const start = i * blockSize;
+      let min = 1.0;
+      let max = -1.0;
+      const end = Math.min(start + blockSize, totalSamples);
+      for (let j = start; j < end; j += 4) {
+        const val = channelData[j];
+        if (val < min) min = val;
+        if (val > max) max = val;
+      }
+      const peakAmp = Math.max(Math.abs(min), Math.abs(max));
+      peaks.push(Math.min(1.0, peakAmp));
+    }
+    recordedWaveformData = peaks;
+  } catch (err) {
+    console.log('extractWaveformData error:', err);
+  }
+}
+
+function drawVocalWaveform(currentT) {
+  if (!waveformCtx || !waveformCanvas) return;
+  const W = waveformCanvas.getBoundingClientRect().width;
+  const H = waveformCanvas.getBoundingClientRect().height;
+  if (W <= 0 || H <= 0) return;
+
+  // 1. Background ungu gelap kebiruan elegan (sesuai referensi DAW #363360)
+  waveformCtx.fillStyle = '#363360';
+  waveformCtx.fillRect(0, 0, W, H);
+
+  // 2. Garis aksen hijau tipis di bagian atas (y = 0)
+  waveformCtx.fillStyle = '#25744a';
+  waveformCtx.fillRect(0, 0, W, 1);
+
+  // 3. Garis pemisah gelap tipis (y = 1)
+  waveformCtx.fillStyle = '#17171e';
+  waveformCtx.fillRect(0, 1, W, 1);
+
+  // 4. Centerline (sumbu tengah baseline amplitudo nol)
+  const centerY = Math.floor(H / 2);
+  waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  waveformCtx.lineWidth = 1;
+  waveformCtx.beginPath();
+  waveformCtx.moveTo(0, centerY);
+  waveformCtx.lineTo(W, centerY);
+  waveformCtx.stroke();
+
+  // 5. Gambar Gelombang Amplitudo Murni Vokal Pengguna
+  const barsData = recordedWaveformData;
+  const userVocDur = recordedTotalDuration > 0 ? recordedTotalDuration : (isRecording ? Math.max(1, currentT) : 0);
+
+  if (barsData && barsData.length > 0) {
+    // Mode hasil rekaman vokal asli pengguna (Decoded PCM Peaks)
+    const numBars = barsData.length;
+    const barWidth = Math.max(1.2, W / numBars);
+    waveformCtx.fillStyle = '#665dc3'; // Ungu lilac persis referensi
+
+    for (let i = 0; i < numBars; i++) {
+      const amp = barsData[i];
+      if (amp > 0.015) {
+        const x = (i / numBars) * W;
+        const barH = Math.max(3, amp * (H - 12));
+        const topY = centerY - barH / 2;
+        waveformCtx.fillRect(x, topY, barWidth, barH);
+      }
+    }
+  } else if (isRecording && liveWaveformPeaks.length > 0) {
+    // Mode sedang merekam: render live waveform vokal pengguna
+    const maxT = Math.max(1, currentT);
+    waveformCtx.fillStyle = '#8b5cf6';
+    const barW = Math.max(1.5, W / 300);
+    for (let i = 0; i < liveWaveformPeaks.length; i++) {
+      const p = liveWaveformPeaks[i];
+      const x = (p.t / (maxT < 60 ? 60 : maxT)) * W;
+      const barH = Math.max(2, p.amp * (H - 12));
+      const topY = centerY - barH / 2;
+      waveformCtx.fillRect(x, topY, barW, barH);
+    }
+  } else {
+    // Mode diam: garis panduan netral tanpa sinyal vokal
+    waveformCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    waveformCtx.fillRect(0, centerY - 1, W, 2);
+  }
+
+  // 6. Kursor Playhead Putih Bersih (Hanya aktif saat merekam atau saat ada rekaman vokal pengguna)
+  if (userVocDur > 0 && (recordedWaveformData || isRecording)) {
+    let playheadT = 0;
+    if (isPlaybackPlaying) {
+      playheadT = playbackCurrentTime;
+    } else if (isRecording) {
+      playheadT = currentT;
+    } else {
+      playheadT = (isRollPaused ? pausedDisplayT : currentSessionT) + userScrollTimeOffset;
+    }
+
+    const cursorRatio = Math.min(1, Math.max(0, playheadT / userVocDur));
+    const cursorX = cursorRatio * W;
+
+    waveformCtx.strokeStyle = '#ffffff';
+    waveformCtx.lineWidth = 1.5;
+    waveformCtx.beginPath();
+    waveformCtx.moveTo(cursorX, 0);
+    waveformCtx.lineTo(cursorX, H);
+    waveformCtx.stroke();
+  }
+
+  // 7. Garis Hover Mouse & Badge Waktu (Hanya bila ada data vokal pengguna)
+  if (waveformHoverX >= 0 && !isRecording && recordedTotalDuration > 0 && recordedWaveformData) {
+    waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    waveformCtx.lineWidth = 1;
+    waveformCtx.setLineDash([3, 2]);
+    waveformCtx.beginPath();
+    waveformCtx.moveTo(waveformHoverX, 0);
+    waveformCtx.lineTo(waveformHoverX, H);
+    waveformCtx.stroke();
+    waveformCtx.setLineDash([]);
+
+    const hoverT = (waveformHoverX / W) * recordedTotalDuration;
+    const badgeW = 54;
+    const badgeH = 16;
+    const badgeX = Math.min(Math.max(2, waveformHoverX - badgeW / 2), W - badgeW - 2);
+    waveformCtx.fillStyle = '#0f172a';
+    waveformCtx.fillRect(badgeX, 3, badgeW, badgeH);
+    waveformCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    waveformCtx.lineWidth = 1;
+    waveformCtx.strokeRect(badgeX, 3, badgeW, badgeH);
+    waveformCtx.fillStyle = '#ffffff';
+    waveformCtx.font = 'bold 9.5px JetBrains Mono, monospace';
+    waveformCtx.textAlign = 'center';
+    waveformCtx.fillText(`▶ ${hoverT.toFixed(1)}s`, badgeX + badgeW / 2, 14);
+    waveformCtx.textAlign = 'start';
+  }
+}
+
+// ─── Recording Logic ───
+function startRecording() {
+  if (!stream || isRecording) return;
+  // Hentikan seluruh audio pemutaran secara tuntas
+  stopAllAudioPlayback();
+  const player = document.getElementById('audioPlayback');
+  if (player) {
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+  }
+
+  recordedWaveformData = null;
+  liveWaveformPeaks = [];
+  const statusEl = document.getElementById('waveformStatusText');
+  if (statusEl) statusEl.textContent = 'Merekam vokal...';
+
+  pitchHistory = [];
+  resonanceHistory = [];
+  rmsHistory = [];
+  midiNoteBlocks = [];
+  activeMidiBlock = null;
+  recentPitchReadings = [];
+  stableNoteInfo = null;
+  pendingMidi = null;
+  recordedChunks = [];
+  isRecording = true;
+  recordStartTime = Date.now();
+
+  // Jika sedang latihan karaoke lagu sendiri, putar lagu setelah jeda lead-in (2.5 detik) agar sinkron dengan balok nada yang mengalir
+  if (currentExercise === 'custom' && customSongAudioElement) {
+    customSongAudioElement.currentTime = 0;
+    setTimeout(() => {
+      if (isRecording) {
+        customSongAudioElement.play().catch(e => console.log('Autoplay audio blocked:', e));
+      }
+    }, INITIAL_LEAD_IN_SECS * 1000);
+  }
+
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.start(100);
+  document.getElementById('statusDot').className = 'status-dot active';
+  document.getElementById('statusText').textContent = 'RECORDING';
+  document.getElementById('btnRecord').disabled = true;
+  document.getElementById('btnStop').disabled = false;
+  document.getElementById('btnAnalyze').disabled = true;
+  document.getElementById('playbackBar').classList.add('hidden');
+  let sec = 0;
+  recordTimerInterval = setInterval(() => {
+    sec++;
+    const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+    const ss = String(sec % 60).padStart(2, '0');
+    document.getElementById('recTimer').textContent = `${mm}:${ss}`;
+    if (sec >= MAX_SEC) stopRecording();
+  }, 1000);
+}
+function stopRecording() {
+  if (!isRecording) return;
+  isRecording = false;
+  clearInterval(recordTimerInterval);
+  recordedTotalDuration = Math.max(0, (Date.now() - recordStartTime) / 1000);
+
+  // Hentikan pemutaran musik lagu sendiri bila sedang berjalan
+  if (customSongAudioElement) {
+    customSongAudioElement.pause();
+    customSongAudioElement.currentTime = 0;
+  }
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.onstop = () => {
+      if (recordedChunks.length > 0) {
+        const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const player = document.getElementById('audioPlayback');
+        player.src = audioUrl;
+        document.getElementById('playbackBar').classList.remove('hidden');
+
+        // Ekstrak bentuk gelombang audio vokal asli (Waveform Decoding)
+        const statusEl = document.getElementById('waveformStatusText');
+        if (statusEl) statusEl.textContent = 'Memproses gelombang suara...';
+
+        audioBlob.arrayBuffer().then(buf => {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          audioCtx.decodeAudioData(buf.slice(0), (decodedBuffer) => {
+            extractWaveformData(decodedBuffer);
+            if (statusEl) {
+              const mm = String(Math.floor(recordedTotalDuration / 60)).padStart(2, '0');
+              const ss = String(Math.floor(recordedTotalDuration % 60)).padStart(2, '0');
+              statusEl.textContent = `Terekam: ${mm}:${ss} · Siap diputar`;
+            }
+          }, (err) => {
+            console.log('Decode audio waveform fallback:', err);
+            if (liveWaveformPeaks.length > 0) {
+              recordedWaveformData = liveWaveformPeaks.map(p => p.amp);
+            }
+            if (statusEl) statusEl.textContent = 'Vokal terekam';
+          });
+        }).catch(err => {
+          console.log('Audio blob buffer read error:', err);
+          if (liveWaveformPeaks.length > 0) {
+            recordedWaveformData = liveWaveformPeaks.map(p => p.amp);
+          }
+        });
+
+        // Sinkronisasi pemutaran hasil rekaman dengan papan notasi & lagu
+        player.onplay = () => {
+          isPlaybackPlaying = true;
+          playbackLastAudioTime = player.currentTime;
+          playbackLastSysTime = performance.now();
+          if (isRollPaused) togglePauseRoll();
+          if (currentExercise === 'custom' && customSongAudioElement) {
+            // Selaraskan waktu awal lagu
+            customSongAudioElement.currentTime = player.currentTime;
+            customSongAudioElement.play().catch(e => console.log(e));
+          }
+        };
+
+        player.onseeked = () => {
+          playbackLastAudioTime = player.currentTime;
+          playbackLastSysTime = performance.now();
+          if (currentExercise === 'custom' && customSongAudioElement) {
+            customSongAudioElement.currentTime = player.currentTime;
+          }
+        };
+
+        player.ontimeupdate = () => {
+          playbackCurrentTime = player.currentTime;
+          playbackLastAudioTime = player.currentTime;
+          playbackLastSysTime = performance.now();
+          if (currentExercise === 'custom' && customSongAudioElement) {
+            // Toleransi drift sangat ketat (0.08s) agar vokal dan musik lagu selalu presisi serempak
+            if (Math.abs(customSongAudioElement.currentTime - player.currentTime) > 0.08) {
+              customSongAudioElement.currentTime = player.currentTime;
+            }
+          }
+        };
+
+        player.onpause = () => {
+          isPlaybackPlaying = false;
+          playbackLastAudioTime = player.currentTime;
+          playbackLastSysTime = performance.now();
+          if (currentExercise === 'custom' && customSongAudioElement) {
+            customSongAudioElement.pause();
+          }
+          updatePlaybackButtonUI(false);
+        };
+
+        player.onended = () => {
+          isPlaybackPlaying = false;
+          playbackCurrentTime = recordedTotalDuration;
+          playbackLastAudioTime = recordedTotalDuration;
+          if (currentExercise === 'custom' && customSongAudioElement) {
+            customSongAudioElement.pause();
+            customSongAudioElement.currentTime = 0;
+          }
+          updatePlaybackButtonUI(false);
+        };
+      }
+    };
+    mediaRecorder.stop();
+  }
+  document.getElementById('statusDot').className = 'status-dot';
+  document.getElementById('statusText').textContent = 'STOPPED';
+  document.getElementById('btnRecord').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('btnAnalyze').disabled = pitchHistory.length < 5;
+}
+function updateRunningTelemetry() {
+  const valid = pitchHistory.filter(p => p.freq > 0).map(p => p.freq);
+  const btnAnalyze = document.getElementById('btnAnalyze');
+  if (btnAnalyze && valid.length >= 5) {
+    btnAnalyze.disabled = false;
+  }
+  if (!valid.length) return;
+  const sorted = [...valid].sort((a, b) => a - b);
+  const med = sorted[Math.floor(sorted.length / 2)];
+  const voiced = Math.round(valid.length / pitchHistory.length * 100);
+  document.getElementById('telemetryMedian').textContent = `${med.toFixed(1)} Hz`;
+  document.getElementById('telemetryVoiced').textContent = `${voiced}%`;
+  const lowNote = PitchUtils.freqToNote(sorted[0]);
+  const highNote = PitchUtils.freqToNote(sorted[sorted.length - 1]);
+  if (lowNote) document.getElementById('telemetryLow').textContent = `${lowNote.note}${lowNote.octave}, ${sorted[0].toFixed(1)} Hz`;
+  if (highNote) document.getElementById('telemetryHigh').textContent = `${highNote.note}${highNote.octave}, ${sorted[sorted.length - 1].toFixed(1)} Hz`;
+}
+// ÔöÇÔöÇÔöÇ Comprehensive Singing Analysis (FR-011 & FR-012) ÔöÇÔöÇÔöÇ
+function analyzeVoice() {
+  const valid = pitchHistory.filter(p => p.freq > 0);
+  if (valid.length < 5) {
+    alert('Rekaman vokal tidak cukup panjang untuk dievaluasi. Lakukan rekaman ulang minimal 3 detik.');
+    return;
+  }
+  const freqs = valid.map(p => p.freq);
+  const sorted = [...freqs].sort((a, b) => a - b);
+  const medianF0 = sorted[Math.floor(sorted.length / 2)];
+  const robustLow = sorted[Math.floor(sorted.length * 0.1)];
+  const robustHigh = sorted[Math.floor(sorted.length * 0.9)];
+  const voicedPct = Math.round(valid.length / pitchHistory.length * 100);
+  const cents = valid.map(p => p.cents || 0);
+  const inTuneCount = cents.filter(c => Math.abs(c) <= 20).length;
+  const flatCount   = cents.filter(c => c < -20).length;
+  const sharpCount  = cents.filter(c => c > 20).length;
+  const pitchAccuracy = Math.round((inTuneCount / cents.length) * 100);
+  const avgRes = resonanceHistory.length
+    ? {
+        chest: Math.round(resonanceHistory.reduce((s, r) => s + r.chest, 0) / resonanceHistory.length),
+        mask:  Math.round(resonanceHistory.reduce((s, r) => s + r.mask,  0) / resonanceHistory.length),
+        head:  Math.round(resonanceHistory.reduce((s, r) => s + r.head,  0) / resonanceHistory.length)
+      }
+    : { chest: 33, mask: 33, head: 33 };
+  const vibrato = PitchUtils.estimateVibrato(valid.slice(-60).map(p => p.freq));
+  const validRms = rmsHistory.filter(r => isFinite(r));
+  const avgRms = validRms.length ? validRms.reduce((a, b) => a + b, 0) / validRms.length : -40;
+  const rmsStd = validRms.length > 1
+    ? Math.sqrt(validRms.reduce((s, r) => s + Math.pow(r - avgRms, 2), 0) / validRms.length)
+    : 10;
+  const breathScore = Math.max(0, Math.min(100, Math.round(100 - rmsStd * 4.5)));
+  // Weighted overall score
+  const totalScore = Math.round(
+    pitchAccuracy * 0.35 +
+    Math.min(voicedPct, 100) * 0.15 +
+    breathScore * 0.20 +
+    (vibrato.hasVibrato ? 85 : 50) * 0.15 +
+    Math.min(avgRes.mask, 60) * 0.15
+  );
+  renderReportSection({
+    score: totalScore,
+    pitchAccuracy,
+    voicedPct,
+    breathScore,
+    vibrato,
+    avgRes,
+    medianF0,
+    robustLow,
+    robustHigh,
+    inTuneCount,
+    flatCount,
+    sharpCount,
+    totalFrames: cents.length,
+    duration: pitchHistory.at(-1)?.t || 0,
+    samples: valid
+  });
+}
+function renderReportSection(data) {
+  const repEl = document.getElementById('reportSection');
+  repEl.classList.remove('hidden');
+  repEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Update Score & KPIs
+  document.getElementById('finalScoreVal').textContent = data.score;
+  const statusEl = document.getElementById('finalScoreStatus');
+  const descEl = document.getElementById('finalScoreDesc');
+
+  if (data.score >= 85) {
+    statusEl.textContent = 'Predikat A: Sangat Baik';
+    statusEl.className = 'score-status text-green';
+    descEl.textContent = 'Ketepatan nada dan kontrol vokal stabil dan harmonis.';
+  } else if (data.score >= 70) {
+    statusEl.textContent = 'Predikat B: Baik';
+    statusEl.className = 'score-status text-green';
+    descEl.textContent = 'Penguasaan melodi sudah baik, pertahankan konsistensi nada tinggi.';
+  } else if (data.score >= 55) {
+    statusEl.textContent = 'Predikat C: Cukup';
+    statusEl.className = 'score-status text-yellow';
+    descEl.textContent = 'Ada deviasi nada yang perlu dilatih ulang dengan panduan tangga nada.';
+  } else {
+    statusEl.textContent = 'Predikat D: Perlu Latihan';
+    statusEl.className = 'score-status text-red';
+    descEl.textContent = 'Fokus latihan pada stabilitas tangga nada dasar solmisasi.';
+  }
+
+  // Update KPI Cards
+  document.getElementById('kpiPitchAcc').textContent = `${data.pitchAccuracy}%`;
+  document.getElementById('kpiStability').textContent = `${data.breathScore}%`;
+  document.getElementById('kpiDuration').textContent = `${data.duration.toFixed(1)}s`;
+
+  // Chips of sampled notes
+  const chipsEl = document.getElementById('reportChips');
+  chipsEl.innerHTML = '';
+  const sampledNotes = data.samples.slice(0, 36);
+  sampledNotes.forEach(s => {
+    const info = PitchUtils.freqToNote(s.freq);
+    if (!info) return;
+    const centsRound = Math.round(info.cents);
+    const cls = Math.abs(centsRound) <= 20 ? 'in-tune' : centsRound < -20 ? 'flat' : 'sharp';
+    const tag = Math.abs(centsRound) <= 20 ? 'Pas' : centsRound < -20 ? 'Fals Bawah' : 'Fals Atas';
+    chipsEl.innerHTML += `<div class="metric-chip ${cls}">${info.note}${info.octave} • ${centsRound >= 0 ? '+' : ''}${centsRound} sen • ${tag}</div>`;
+  });
+
+  // Table Metrics in clear Indonesian
+  const medInfo  = PitchUtils.freqToNote(data.medianF0);
+  const lowInfo  = PitchUtils.freqToNote(data.robustLow);
+  const highInfo = PitchUtils.freqToNote(data.robustHigh);
+  const rows = [
+    ['Durasi Bernyanyi Efektif', `${data.duration.toFixed(1)} detik`],
+    ['Frekuensi Nada Rata-rata', `${data.medianF0.toFixed(1)} Hz ${medInfo ? `, nada ${medInfo.note}${medInfo.octave}` : ''}`],
+    ['Batas Nada Terendah', `${data.robustLow.toFixed(1)} Hz ${lowInfo ? `, nada ${lowInfo.note}${lowInfo.octave}` : ''}`],
+    ['Batas Nada Tertinggi', `${data.robustHigh.toFixed(1)} Hz ${highInfo ? `, nada ${highInfo.note}${highInfo.octave}` : ''}`],
+    ['Persentase Waktu Bersuara', `${data.voicedPct} %`],
+    ['Tingkat Akurasi Nada Tepat', `${data.pitchAccuracy} %`],
+    ['Jumlah Sampel Nada Tepat', `${data.inTuneCount} dari ${data.totalFrames} sampel`],
+    ['Jumlah Sampel Nada Terlalu Rendah', `${data.flatCount} sampel`],
+    ['Jumlah Sampel Nada Terlalu Tinggi', `${data.sharpCount} sampel`],
+    ['Kestabilan Aliran Napas dan Volume', `${data.breathScore} %`]
+  ];
+  document.getElementById('reportMetricsBody').innerHTML = rows.map(([k, v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+
+  // Resonance Bars in Indonesian
+  document.getElementById('reportResonanceRows').innerHTML = `
+    <div class="resonance-bar"><span class="resonance-label">Suara Dada</span><div class="resonance-track"><div class="resonance-fill chest" style="width:${data.avgRes.chest}%;"></div></div><span class="resonance-val">${data.avgRes.chest}%</span></div>
+    <div class="resonance-bar"><span class="resonance-label">Suara Campuran</span><div class="resonance-track"><div class="resonance-fill mask" style="width:${data.avgRes.mask}%;"></div></div><span class="resonance-val">${data.avgRes.mask}%</span></div>
+    <div class="resonance-bar"><span class="resonance-label">Suara Kepala</span><div class="resonance-track"><div class="resonance-fill head" style="width:${data.avgRes.head}%;"></div></div><span class="resonance-val">${data.avgRes.head}%</span></div>
+  `;
+
+  // Vibrato text in Indonesian
+  document.getElementById('reportVibratoText').innerHTML = data.vibrato.hasVibrato
+    ? `Getaran vokal alami terdeteksi stabil. Kecepatan modulasi nada: <b>${data.vibrato.rate} Hz</b> dengan kedalaman getaran: <b>${data.vibrato.depth} sen</b>.`
+    : `Tidak ada getaran vibrato dominan karena karakter suara datar atau durasi nada terlalu singkat.`;
+
+  // Radar chart
+  renderRadarChart(data);
+
+  // Rekomendasi vokal ringkas & profesional
+  const recs = [];
+  if (data.pitchAccuracy < 70) {
+    recs.push(`<strong>Latihan Ketepatan Nada:</strong> Gunakan menu Tuner untuk melatih tangga nada Do-Re-Mi hingga deviasi stabil di bawah ±15 sen.`);
+  }
+  if (data.flatCount > data.sharpCount * 1.5) {
+    recs.push(`<strong>Dukungan Napas dan Nada Rendah:</strong> Sebagian nada berada di bawah target. Tingkatkan tekanan napas diafragma saat menahan nada.`);
+  } else if (data.sharpCount > data.flatCount * 1.5) {
+    recs.push(`<strong>Relaksasi Leher dan Nada Tinggi:</strong> Hindari tekanan berlebih pada laring saat nada tinggi serta lemaskan rahang.`);
+  }
+  if (data.avgRes.mask < 25) {
+    recs.push(`<strong>Resonansi Wajah:</strong> Latih dengungan suara sengau untuk memperkuat fokus suara di rongga wajah.`);
+  }
+  if (recs.length === 0) {
+    recs.push(`<strong>Konsistensi Baik:</strong> Kontrol intonasi dan resonansi sudah stabil. Tingkatkan ke repertoar dengan jangkauan lebih luas.`);
+  }
+  document.getElementById('reportRecommendations').innerHTML = recs.map(r => `<div class="rec-item" style="padding: 0.6rem 0.8rem; margin-bottom: 0.4rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem; line-height: 1.5;">${r}</div>`).join('');
+
+  // Print metadata
+  const dStr = new Date().toLocaleString('id-ID');
+  document.getElementById('printMetaText').textContent = `Tanggal Tes: ${dStr} | Durasi: ${data.duration.toFixed(1)}s | Skor Akhir: ${data.score}/100`;
+}
+
+let radarChartObj = null;
+function renderRadarChart(d) {
+  const labels = ['Akurasi Nada', 'Kestabilan Suara', 'Kontrol Napas', 'Getaran Vibrato', 'Resonansi Mask'];
+  const values = [
+    d.pitchAccuracy,
+    Math.min(d.voicedPct, 100),
+    d.breathScore,
+    d.vibrato.hasVibrato ? 85 : 45,
+    Math.min(d.avgRes.mask, 100)
+  ];
+  document.getElementById('radarLegend').innerHTML = labels.map((label, index) =>
+    `<div style="display: flex; justify-content: space-between; align-items: center; padding: 2px 0;">
+      <span style="color: var(--text-muted);">${label}</span>
+      <b style="font-family: var(--font-mono); color: var(--text);">${values[index]}%</b>
+    </div>`
+  ).join('');
+
+  const ctx = document.getElementById('radarCanvas').getContext('2d');
+  if (radarChartObj) radarChartObj.destroy();
+  radarChartObj = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Skor Sesi',
+        data: values,
+        fill: true,
+        backgroundColor: 'rgba(99, 102, 241, 0.20)',
+        borderColor: '#6366f1',
+        borderWidth: 2,
+        pointBackgroundColor: '#4f46e5',
+        pointBorderColor: '#ffffff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          grid: { color: 'rgba(226, 232, 240, 0.9)', circular: true },
+          angleLines: { color: 'rgba(226, 232, 240, 0.9)' },
+          ticks: { display: false, stepSize: 25 },
+          pointLabels: {
+            color: '#334155',
+            font: { size: 10, weight: '700', family: 'Plus Jakarta Sans' },
+            padding: 6
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          displayColors: false,
+          callbacks: { label: context => `${context.label}: ${context.raw}%` }
+        }
+      }
+    }
+  });
+}
+function resetStudio() {
+  document.getElementById('reportSection').classList.add('hidden');
+  document.getElementById('recTimer').textContent = '00:00';
+  pitchHistory = [];
+  resonanceHistory = [];
+  rmsHistory = [];
+  midiNoteBlocks = [];
+  activeMidiBlock = null;
+  recentPitchReadings = [];
+  stableNoteInfo = null;
+  pendingMidi = null;
+  sessionStartTime = Date.now();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

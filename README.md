@@ -1,59 +1,90 @@
-﻿# VocalSense AI
-Platform latihan vokal cerdas berbasis web responsif untuk evaluasi nada bernyanyi presisi tinggi langsung di peramban web (*in-browser processing*) menggunakan Web Audio API tanpa ketergantungan server.
+﻿# VocalSense AI (Vue.js 3 Edition)
+Platform latihan vokal cerdas berbasis Single Page Application (SPA) responsif dengan framework **Vue.js 3 + Vite** untuk evaluasi nada bernyanyi presisi tinggi langsung di peramban web (*in-browser local processing*) menggunakan Web Audio API.
+
 ---
-## Fitur Utama
-- **Chromatic Tuner**: Pendeteksian nada dasar secara real-time dengan jarum meter deviasi cents dan kontrol ambang batas kebisingan lingkungan (*noise gate*).
-- **Vocal Range Finder**: Pengujian rentang nada terendah (*Lowest Note*) hingga tertinggi (*Highest Note*) pada tuts piano interaktif beserta klasifikasi tipe suara otomatis (Bass, Bariton, Tenor, Contralto, Mezzo-Sopran, Sopran).
-- **DAW-Style Piano Roll Studio**: Studio bernyanyi interaktif dengan jendela geser 10 detik, notasi balok solid MIDI, panduan melodi Do-Re-Mi / arpeggio, dan audio synth piano bawaan.
-- **AI Vocal & Resonance Analytics**: Ekstraksi parameter akustik mencakup deteksi notasi musik, deviasi cents, status nada (*In-Tune*, *Flat*, *Sharp*), osilasi vibrato 5-7 Hz, dan analisis distribusi energi resonansi 3 pita suara (Chest, Mask/Mixed, Head Voice).
-- **Rapor Bernyanyi 5 Dimensi**: Visualisasi radar chart performa bernyanyi, kartu skor keseluruhan (0-100), dan rekomendasi latihan vokal.
-- **Ekspor Rapor PDF**: Fitur cetak dokumen evaluasi vokal siap arsip menggunakan stylesheet `@media print`.
-- **Manajemen Akun & Model Freemium**: Halaman autentikasi pengguna dan katalog perbandingan tier (Free, Pro, Premium).
+
+## Capaian Progress: 50.0% (12 dari 24 Fitur SRS Terpenuhi)
+Sistem telah ditingkatkan dari prototype statis ke arsitektur framework modern **Vue.js 3**, serta mengintegrasikan fitur ke-12 (**FR-009: Pengunggahan Berkas Audio Bernyanyi**).
+
+### Fitur Utama yang Telah Selesai
+1. **FR-001 [Registrasi Akun Pengguna]**: Registrasi akun penyanyi dan penentuan paket awal (`src/views/RegisterView.vue`).
+2. **FR-002 [Autentikasi Pengguna & JWT Sesi]**: Manajemen sesi login pengguna dan demo OAuth (`src/views/LoginView.vue`).
+3. **FR-006 [Chromatic Tuner & Kalibrasi Noise]**: Pendeteksi nada kromatik real-time dengan jarum meter deviasi cents dan ambient noise gate (`src/views/TunerView.vue`).
+4. **FR-007 [Vocal Range Finder]**: Pengujian nada terendah (*Lowest Note*) hingga tertinggi (*Highest Note*) pada tuts piano interaktif beserta klasifikasi tipe vokal otomatis (`src/views/RangeFinderView.vue`).
+5. **FR-008 [Perekaman Bernyanyi & Live Piano Roll]**: Studio DAW interaktif dengan jendela geser 10 detik, notasi balok solid MIDI, dan garis kurva nada real-time (`src/views/StudioView.vue`).
+6. **FR-009 [Pengunggahan Berkas Audio Bernyanyi - NEW]**: Fasilitas upload file vokal rekaman eksternal (WAV/MP3/M4A) untuk didekode dan dianalisis nadanya pada Piano Roll (`src/views/StudioView.vue`).
+7. **FR-010 [Pemutaran Ulang Audio Rekaman]**: Pemutar instan audio buffer hasil rekaman bernyanyi langsung di peramban (`src/views/StudioView.vue`).
+8. **FR-011 [AI Pitch & Acoustic Resonance Engine]**: Ekstraksi parameter akustik mencakup deteksi notasi musik, deviasi cents, osilasi vibrato 5-7 Hz, dan analisis 3 pita resonansi vokal (`src/utils/pitch.js`).
+9. **FR-012 [Rapor Bernyanyi 5 Dimensi & Saran AI]**: Kartu skor keseluruhan (0-100), visualisasi Radar Chart 5 dimensi vokal, dan rekomendasi latihan personal (`src/views/StudioView.vue`).
+10. **FR-015 [Ekspor / Cetak Rapor Format PDF]**: Fitur cetak dokumen evaluasi vokal siap arsip menggunakan `@media print` (`src/views/StudioView.vue`).
+11. **FR-021 [Latihan Tangga Nada & Solfeggio Terpandu]**: Balok melodi panduan Do-Re-Mi dan synthesizer audio piano bawaan (`src/views/StudioView.vue`).
+12. **FR-022 [Katalog Paket & Tier Switcher]**: Katalog komparasi paket layanan (Free, Pro, Premium) dan simulasi tier akun (`src/views/HomeView.vue`).
+
 ---
+
 ## Arsitektur & Teknologi
-- **Antarmuka**: HTML5, CSS3 kustom (Studio Pro Dark Theme), vanilla JavaScript.
-- **Tipografi**: Plus Jakarta Sans dan JetBrains Mono.
-- **Pemrosesan Audio**: Web Audio API (in-browser processing), AnalyserNode FFT, algoritma McLeod Pitch Method / Normalized Square Difference Function (NSDF), dan median filter 7-sample untuk stabilisasi nada.
-- **Visualisasi Data**: HTML5 Canvas API (Piano Roll) dan Chart.js (Radar Chart).
+- **Frontend Framework**: Vue.js 3 (Composition API / `<script setup>`), Vue Router 4, Vite 6.
+- **Tipografi & Desain**: Plus Jakarta Sans, JetBrains Mono, Inter, dan Studio Pro Dark Theme CSS.
+- **Pemrosesan Audio**: Web Audio API (in-browser processing), AnalyserNode FFT, algoritma McLeod Pitch Method / Normalized Square Difference Function (NSDF), dan median filter.
+- **Visualisasi Data**: HTML5 Canvas API (Piano Roll & Spektogram) dan Chart.js 4 (Radar Chart).
+
 ---
-## Panduan Menjalankan
-Aplikasi berjalan sepenuhnya pada sisi klien (*client-side*).
+
+## Panduan Menjalankan Proyek Vue.js
+
 ### Prasyarat
-- Peramban web modern (Google Chrome, Microsoft Edge, Mozilla Firefox, atau Safari).
+- Node.js versi 18 atau lebih baru.
 - Mikrofon aktif dengan izin akses pada peramban.
-### Menjalankan secara Lokal
-1. Clone repositori:
+
+### Menjalankan Mode Pengembangan
+1. Masuk ke direktori aplikasi:
    ```bash
-   git clone https://github.com/elowgelo/VocalSense.git
-   cd VocalSense
+   cd app
    ```
-2. Jalankan server lokal:
-   Menggunakan Python:
+2. Pasang dependensi:
    ```bash
-   python -m http.server 8000
+   npm install
    ```
-   Atau menggunakan Node.js:
+3. Jalankan server pengembangan Vite:
    ```bash
-   npx serve .
+   npm run dev
    ```
-3. Buka peramban pada alamat `http://localhost:8000`.
-Aplikasi juga dapat dibuka langsung melalui berkas `index.html` pada peramban.
+4. Buka peramban pada alamat `http://localhost:5173`.
+
+### Membangun Versi Produksi
+```bash
+npm run build
+npm run preview
+```
+
 ---
+
 ## Struktur Berkas
 ```text
-VocalSense/
-Ôö£ÔöÇÔöÇ index.html              # Halaman beranda dan katalog paket
-Ôö£ÔöÇÔöÇ README.md               # Dokumentasi proyek
-Ôö£ÔöÇÔöÇ css/
-Ôöé   ÔööÔöÇÔöÇ style.css           # Desain antarmuka Studio Pro
-Ôö£ÔöÇÔöÇ js/
-Ôöé   ÔööÔöÇÔöÇ pitch.js            # Engine pendeteksi nada dan teori musik
-ÔööÔöÇÔöÇ pages/
-    Ôö£ÔöÇÔöÇ login.html          # Halaman autentikasi pengguna
-    Ôö£ÔöÇÔöÇ range-finder.html   # Pengujian jangkauan vokal
-    Ôö£ÔöÇÔöÇ register.html       # Pendaftaran pengguna baru
-    Ôö£ÔöÇÔöÇ studio.html         # Studio vokal, piano roll, dan rapor evaluasi
-    ÔööÔöÇÔöÇ tuner.html          # Tuner kromatik digital
+app/
+├── index.html                 # Entry point Vite SPA
+├── package.json               # Dependensi Vue 3, Vue Router, Chart.js, Vite
+├── vite.config.js             # Konfigurasi build dan proxy backend
+├── src/
+│   ├── main.js                # Inisialisasi Vue App & Router
+│   ├── App.vue                # Root layout antarmuka
+│   ├── assets/
+│   │   └── style.css          # Desain antarmuka Studio Pro Dark Theme
+│   ├── components/
+│   │   ├── Navbar.vue         # Navigasi utama dan status akun
+│   │   └── Footer.vue         # Informasi lisensi dan tautan
+│   ├── router/
+│   │   └── index.js           # Vue Router konfigurasi rute SPA
+│   ├── utils/
+│   │   └── pitch.js           # ES Module engine pendeteksi nada & akustik vokal
+│   └── views/
+│       ├── HomeView.vue       # Beranda dan katalog paket langganan (FR-022)
+│       ├── TunerView.vue      # Chromatic Tuner digital (FR-006)
+│       ├── RangeFinderView.vue# Pengujian jangkauan vokal (FR-007)
+│       ├── StudioView.vue     # Studio DAW, Piano Roll, Audio Upload, & Rapor (FR-008, FR-009, FR-010, FR-012, FR-015, FR-021)
+│       ├── LoginView.vue      # Autentikasi pengguna (FR-002)
+│       └── RegisterView.vue   # Registrasi pengguna (FR-001)
+└── legacy_prototype/          # Arsip cadangan kode prototype statis awal
 ```
 ---
 ## Lisensi
