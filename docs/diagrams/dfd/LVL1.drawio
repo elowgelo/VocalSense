@@ -1,0 +1,95 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DFD Level 1" id="dfd_level_1">
+    <mxGraphModel dx="1758" dy="1066" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Input from Process 1 -->
+        <mxCell id="p_in" parent="1" style="html=1;dashed=0;whiteSpace=wrap;fontSize=11;fontStyle=1;" value="1 Sistem Akun &amp; Profil" vertex="1">
+          <mxGeometry height="50" width="130" x="120" y="250" as="geometry" />
+        </mxCell>
+        
+        <!-- Subprocesses 2.x -->
+        <mxCell id="p_21" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;" value="2.1 Menangkap Audio&#xa;Bernyanyi" vertex="1">
+          <mxGeometry height="120" width="120" x="125" y="650" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p_22" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;" value="2.2 Memvalidasi Kualitas&#xa;&amp; Kebisingan Sinyal" vertex="1">
+          <mxGeometry height="120" width="120" x="350" y="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p_23" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;" value="2.3 Ekstraksi Frekuensi&#xa;Nada Dasar (F0 &amp; Cents)" vertex="1">
+          <mxGeometry height="120" width="120" x="350" y="460" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p_24" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;" value="2.4 Mendeteksi Nada Fals&#xa;&amp; Analisis Vibrato" vertex="1">
+          <mxGeometry height="120" width="120" x="350" y="670" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p_25" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;" value="2.5 Mengompilasi Skor&#xa;&amp; Saran Teknik AI" vertex="1">
+          <mxGeometry height="120" width="120" x="580" y="250" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Stores & Entities -->
+        <mxCell id="ds_reports" parent="1" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fontSize=11;fontStyle=1;" value="Data Rekaman &amp; Rapor" vertex="1">
+          <mxGeometry height="30" width="140" x="570" y="500" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ent_ai_engine" parent="1" style="html=1;dashed=0;whiteSpace=wrap;fontSize=11;fontStyle=1;" value="Voice Analytics&#xa;AI Engine" vertex="1">
+          <mxGeometry height="50" width="130" x="575" y="705" as="geometry" />
+        </mxCell>
+        
+        <!-- Edges with Labels -->
+        <mxCell id="e_pin_22" edge="1" parent="1" source="p_in" target="p_22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_pin_22" connectable="0" parent="e_pin_22" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Profil Vokal Penyanyi" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_21_22" edge="1" parent="1" source="p_21" target="p_22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_21_22" connectable="0" parent="e_21_22" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Stream Audio Mentah" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_22_23" edge="1" parent="1" source="p_22" target="p_23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_22_23" connectable="0" parent="e_22_23" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Audio Lolos Noise Filter" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_23_24" edge="1" parent="1" source="p_23" target="p_24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_23_24" connectable="0" parent="e_23_24" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Deret Frekuensi Pitch F0" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_24_ds" edge="1" parent="1" source="p_24" target="ds_reports" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_24_ds" connectable="0" parent="e_24_ds" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Data Cents &amp; Vibrato" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_ds_25" edge="1" parent="1" source="ds_reports" target="p_25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_ds_25" connectable="0" parent="e_ds_25" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Rekapitulasi Nada Sesi" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        
+        <mxCell id="e_ai_24" edge="1" parent="1" source="ent_ai_engine" target="p_24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_ai_24" connectable="0" parent="e_ai_24" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;" value="Model Deteksi Vibrato" vertex="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,147 @@
+<mxfile host="65bd71144e">
+    <diagram name="AD-04 Pemulihan Kata Sandi" id="id_AD-04">
+        <mxGraphModel dx="3416" dy="3153" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1653" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Swimlane 0: Actor (Pengguna or Administrator) -->
+                <mxCell id="lane_0" value="Pengguna" style="swimlane;startSize=30;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="-210" width="330" height="1350" as="geometry"/>
+                </mxCell>
+                
+                <!-- Swimlane 1: Sistem -->
+                <mxCell id="lane_1" value="Sistem" style="swimlane;startSize=30;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="120" width="330" height="1350" as="geometry"/>
+                </mxCell>
+                
+                <!-- Swimlane 2: Database -->
+                <mxCell id="lane_2" value="Database" style="swimlane;startSize=30;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="450" width="330" height="1350" as="geometry"/>
+                </mxCell>
+                
+                <!-- Start node in lane_0 -->
+                <mxCell id="n_start" value="" style="ellipse;fillColor=#000000;" parent="lane_0" vertex="1">
+                    <mxGeometry x="152.5" y="50" width="25" height="25" as="geometry"/>
+                </mxCell>
+                
+                <!-- Navigation step in lane_0 -->
+                <mxCell id="n_nav" value="Memilih Tautan Lupa Kata Sandi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_0" vertex="1">
+                    <mxGeometry x="95" y="110" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- System render step in lane_1 -->
+                <mxCell id="n_sys_show" value="Menampilkan Form Permintaan Reset Password" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_1" vertex="1">
+                    <mxGeometry x="95" y="220" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- User input step in lane_0 -->
+                <mxCell id="n_user_input" value="Memasukkan Alamat Email Terdaftar" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_0" vertex="1">
+                    <mxGeometry x="95" y="330" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- User submit step in lane_0 -->
+                <mxCell id="n_user_submit" value="Menekan Tombol Kirim Tautan Pemulihan" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_0" vertex="1">
+                    <mxGeometry x="95" y="440" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- System validation in lane_1 -->
+                <mxCell id="n_sys_val" value="Memvalidasi Format &amp; Status Akun Email" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_1" vertex="1">
+                    <mxGeometry x="95" y="550" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- Database check in lane_2 -->
+                <mxCell id="n_db_check" value="Memeriksa Keberadaan Email di Sistem" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_2" vertex="1">
+                    <mxGeometry x="95" y="660" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- Decision diamond in lane_1 -->
+                <mxCell id="n_dec" value="" style="rhombus;" parent="lane_1" vertex="1">
+                    <mxGeometry x="125" y="770" width="80" height="80" as="geometry"/>
+                </mxCell>
+                
+                <!-- Error notification in lane_1 -->
+                <mxCell id="n_err" value="Menampilkan Peringatan Email Tidak Terdaftar" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#ffffff;strokeColor=#000000;" parent="lane_1" vertex="1">
+                    <mxGeometry x="10" y="860" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- Database save in lane_2 -->
+                <mxCell id="n_db_save" value="Membuat &amp; Menyimpan Token Reset Password" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_2" vertex="1">
+                    <mxGeometry x="95" y="990" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- System success in lane_1 -->
+                <mxCell id="n_sys_succ" value="Mengirim Email Tautan Pemulihan &amp; Notifikasi" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;" parent="lane_1" vertex="1">
+                    <mxGeometry x="95" y="1110" width="140" height="65" as="geometry"/>
+                </mxCell>
+                
+                <!-- End node in lane_1 -->
+                <mxCell id="n_end" value="" style="shape=doubleEllipse;whiteSpace=wrap;" parent="lane_1" vertex="1">
+                    <mxGeometry x="150" y="1230" width="30" height="30" as="geometry"/>
+                </mxCell>
+                
+                <!-- Edges (All with mxGeometry relative="1" per APPL template) -->
+                <mxCell id="e_0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_start" target="n_nav" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_nav" target="n_sys_show" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_sys_show" target="n_user_input" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_user_input" target="n_user_submit" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_user_submit" target="n_sys_val" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_sys_val" target="n_db_check" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_db_check" target="n_dec" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Decision error branch -->
+                <mxCell id="e_7" value="[Tidak Ditemukan]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;fontSize=10;" parent="1" source="n_dec" target="n_err" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Loop back from error to input (clean orthogonal path via left margin) -->
+                <mxCell id="e_8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="n_err" target="n_user_input" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-170" y="892.5"/>
+                            <mxPoint x="-170" y="362.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                
+                <!-- Decision OK branch -->
+                <mxCell id="e_9" value="[Ditemukan]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="n_dec" target="n_db_save" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_db_save" target="n_sys_succ" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="e_11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="n_sys_succ" target="n_end" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <!-- Outer title container (Placed at bottom of root like APPL templates to avoid capturing clicks) -->
+                <mxCell id="outer_container" value="Pemulihan Kata Sandi" style="swimlane;startSize=30;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="-210" y="-30" width="990" height="1380" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
